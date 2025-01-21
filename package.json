@@ -53,6 +53,7 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
-    "@vscode/python-extension": "^1.0.5"
+    "@vscode/python-extension": "^1.0.5",
+    "yaml": "^2.7.0"
   }
 }

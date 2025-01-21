@@ -47,15 +47,21 @@ export async function validatePythonInterpreter(path: string): Promise<Validatio
 
 
 export async function validatePythonImportPath(importPath: string): Promise<ValidationResult> {
-    const pythonPath = vscode.workspace.getConfiguration('python').get<string>('defaultInterpreterPath');
+    const pythonPath = vscode.workspace.getConfiguration('hydra').get<string>('pythonPath');
     if (!pythonPath) {
         return {
             isValid: false,
-            error: 'Python interpreter not configured'
+            error: 'Python interpreter not configured. Please use "Select Python Interpreter" command.'
         };
     }
 
     try {
+        if (!importPath.includes('.')) {
+            return {
+                isValid: false,
+                error: 'Invalid import path: must be a fully qualified path (e.g. package.module.object)'
+            };
+        }
         // _target_ must be a fully qualified object path (module.submodule.object)
         const checkImport = `
 import importlib
