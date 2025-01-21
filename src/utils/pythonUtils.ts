@@ -1,6 +1,7 @@
 // src/utils/pythonUtils.ts
 import { exec, ExecException } from 'child_process';
 import { promisify } from 'util';
+import * as vscode from 'vscode';
 
 const execAsync = promisify(exec);
 
@@ -40,6 +41,45 @@ export async function validatePythonInterpreter(path: string): Promise<Validatio
         return {
             isValid: false,
             error: `Invalid Python interpreter: ${execError.message}`
+        };
+    }
+}
+
+
+export async function validatePythonImportPath(importPath: string): Promise<ValidationResult> {
+    const pythonPath = vscode.workspace.getConfiguration('python').get<string>('defaultInterpreterPath');
+    if (!pythonPath) {
+        return {
+            isValid: false,
+            error: 'Python interpreter not configured'
+        };
+    }
+
+    try {
+        // _target_ must be a fully qualified object path (module.submodule.object)
+        const checkImport = `
+import importlib
+
+module_parts = '${importPath}'.rsplit('.', 1)
+if len(module_parts) <= 1:
+    raise ValueError(f'Invalid _target_ format: {importPath} - must be a fully qualified object path')
+
+module_path, object_name = module_parts
+module = importlib.import_module(module_path)
+getattr(module, object_name)
+`;
+        await execAsync(`"${pythonPath}" -c "${checkImport}"`);
+        return { isValid: true };
+    } catch (error) {
+        const execError = error as ExecException;
+        const errorOutput = execError.stderr || execError.stdout || execError.message || 'Unknown error occurred';
+        console.log(errorOutput);
+        // エラーメッセージの最後の行を取得
+        const lastLine = errorOutput.trim().split('\n').pop() || 'Unknown error occurred';
+        
+        return {
+            isValid: false,
+            error: lastLine
         };
     }
 }
