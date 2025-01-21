@@ -4,7 +4,7 @@ import { promisify } from "util";
 import * as vscode from "vscode";
 import { HYDRA_SETTINGS, PYTHON_SCRIPTS } from "../constants";
 
-const execAsync = promisify(exec);
+export const execAsync = promisify(exec);
 
 interface ValidationResult {
   isValid: boolean;
