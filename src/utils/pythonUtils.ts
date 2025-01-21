@@ -2,7 +2,7 @@
 import { exec, ExecException } from "child_process";
 import { promisify } from "util";
 import * as vscode from "vscode";
-import { HYDRA_SETTINGS, PYTHON_VALIDATION } from "../constants";
+import { HYDRA_SETTINGS, PYTHON_SCRIPTS } from "../constants";
 
 const execAsync = promisify(exec);
 
@@ -23,7 +23,7 @@ export async function validatePythonInterpreter(path: string): Promise<Validatio
     }
 
     // Hydraのインストール確認
-    await execAsync(`"${path}" -c "${PYTHON_VALIDATION.CHECK_HYDRA}"`);
+    await execAsync(`"${path}" -c "${PYTHON_SCRIPTS.CHECK_HYDRA}"`);
     return { isValid: true };
   } catch (error: unknown) {
     // エラーの型を ExecException として扱う
@@ -63,7 +63,7 @@ export async function validatePythonImportPath(importPath: string): Promise<Vali
       };
     }
     // _target_ must be a fully qualified object path (module.submodule.object)
-    const checkImport = PYTHON_VALIDATION.IMPORT_CHECK_TEMPLATE.replace(/%s/g, importPath);
+    const checkImport = PYTHON_SCRIPTS.IMPORT_CHECK_TEMPLATE.replace(/%s/g, importPath);
     await execAsync(`"${pythonPath}" -c "${checkImport}"`);
     return { isValid: true };
   } catch (error) {

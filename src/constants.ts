@@ -36,7 +36,7 @@ export const HYDRA_UTILS_FUNCTIONS = new Set(
 export const DIAGNOSTIC_COLLECTION_NAME = "hydra-yaml";
 
 // Python関連
-export const PYTHON_VALIDATION = {
+export const PYTHON_SCRIPTS = {
   CHECK_HYDRA: "import hydra",
   IMPORT_CHECK_TEMPLATE: `
 import importlib
