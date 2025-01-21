@@ -2,6 +2,7 @@
 import { exec, ExecException } from "child_process";
 import { promisify } from "util";
 import * as vscode from "vscode";
+import { HYDRA_SETTINGS, PYTHON_VALIDATION } from "../constants";
 
 const execAsync = promisify(exec);
 
@@ -22,8 +23,7 @@ export async function validatePythonInterpreter(path: string): Promise<Validatio
     }
 
     // Hydraのインストール確認
-    const checkHydra = "import hydra";
-    await execAsync(`"${path}" -c "${checkHydra}"`);
+    await execAsync(`"${path}" -c "${PYTHON_VALIDATION.CHECK_HYDRA}"`);
     return { isValid: true };
   } catch (error: unknown) {
     // エラーの型を ExecException として扱う
@@ -47,7 +47,7 @@ export async function validatePythonInterpreter(path: string): Promise<Validatio
 }
 
 export async function validatePythonImportPath(importPath: string): Promise<ValidationResult> {
-  const pythonPath = vscode.workspace.getConfiguration("hydra").get<string>("pythonPath");
+  const pythonPath = vscode.workspace.getConfiguration().get<string>(HYDRA_SETTINGS.PYTHON_PATH);
   if (!pythonPath) {
     return {
       isValid: false,
@@ -63,17 +63,7 @@ export async function validatePythonImportPath(importPath: string): Promise<Vali
       };
     }
     // _target_ must be a fully qualified object path (module.submodule.object)
-    const checkImport = `
-import importlib
-
-module_parts = '${importPath}'.rsplit('.', 1)
-if len(module_parts) <= 1:
-    raise ValueError(f'Invalid _target_ format: {importPath} - must be a fully qualified object path')
-
-module_path, object_name = module_parts
-module = importlib.import_module(module_path)
-getattr(module, object_name)
-`;
+    const checkImport = PYTHON_VALIDATION.IMPORT_CHECK_TEMPLATE.replace(/%s/g, importPath);
     await execAsync(`"${pythonPath}" -c "${checkImport}"`);
     return { isValid: true };
   } catch (error) {

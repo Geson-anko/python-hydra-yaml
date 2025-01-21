@@ -1,5 +1,6 @@
 // src/commands/selectRootConfigFile.ts
 import * as vscode from "vscode";
+import { HYDRA_SETTINGS } from "../constants";
 import { updateSettings } from "../utils/settings";
 
 export async function selectRootConfigFile() {
@@ -15,7 +16,7 @@ export async function selectRootConfigFile() {
 
   if (uris && uris.length > 0) {
     try {
-      await updateSettings("hydra.rootConfigFile", uris[0].fsPath);
+      await updateSettings(HYDRA_SETTINGS.CONFIG_ROOT, uris[0].fsPath);
       vscode.window.showInformationMessage("Root config file updated");
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to update root config file: ${error}`);

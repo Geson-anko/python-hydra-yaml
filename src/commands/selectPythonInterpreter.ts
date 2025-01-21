@@ -2,10 +2,9 @@
 import { PythonExtension } from "@vscode/python-extension";
 import type { Environment, EnvironmentPath } from "@vscode/python-extension";
 import * as vscode from "vscode";
+import { CUSTOM_PATH_ITEM, HYDRA_SETTINGS } from "../constants";
 import { validatePythonInterpreter } from "../utils/pythonUtils";
 import { updateSettings } from "../utils/settings";
-
-const CUSTOM_PATH_ITEM = "$(add) Enter custom path...";
 
 export async function selectPythonInterpreter() {
   try {
@@ -81,7 +80,7 @@ export async function selectPythonInterpreter() {
     await environments.updateActiveEnvironmentPath(selectedPath);
 
     // 設定を更新
-    await updateSettings("hydra.pythonPath", selectedPath);
+    await updateSettings(HYDRA_SETTINGS.PYTHON_PATH, selectedPath);
     vscode.window.showInformationMessage(`Python environment updated to: ${selectedPath}`);
 
     // 環境の変更を監視するイベントリスナーを設定

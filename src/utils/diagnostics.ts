@@ -1,18 +1,12 @@
 import * as vscode from "vscode";
 import { parse as parseYaml } from "yaml";
+import { DIAGNOSTIC_COLLECTION_NAME, HYDRA_KEYWORDS, HYDRA_UTILS_FUNCTIONS } from "../constants";
 import { validatePythonImportPath } from "./pythonUtils";
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
-const HYDRA_UTILS_FUNCTIONS = new Set([
-  "hydra.utils.get_object",
-  "hydra.utils.get_class",
-  "hydra.utils.get_static_method",
-  "hydra.utils.get_method",
-]);
-
 export function initDiagnostics(context: vscode.ExtensionContext) {
-  diagnosticCollection = vscode.languages.createDiagnosticCollection("hydra-yaml");
+  diagnosticCollection = vscode.languages.createDiagnosticCollection(DIAGNOSTIC_COLLECTION_NAME);
   context.subscriptions.push(
     diagnosticCollection,
     vscode.workspace.onDidChangeTextDocument(e => {
@@ -39,9 +33,9 @@ async function validateDocument(document: vscode.TextDocument) {
 async function validateNode(node: any, document: vscode.TextDocument, diagnostics: vscode.Diagnostic[]) {
   if (!node || typeof node !== "object") return;
 
-  if ("_target_" in node) {
-    const target = node._target_;
-    const targetRange = findRange(document, "_target_:", target);
+  if (HYDRA_KEYWORDS.TARGET in node) {
+    const target = node[HYDRA_KEYWORDS.TARGET];
+    const targetRange = findRange(document, `${HYDRA_KEYWORDS.TARGET}:`, target);
     if (targetRange) {
       const validationResult = await validatePythonImportPath(target);
       if (!validationResult.isValid && validationResult.error) {
