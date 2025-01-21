@@ -21,12 +21,16 @@ export const HYDRA_KEYWORDS = {
 };
 
 // Hydraのビルトイン関数
-export const HYDRA_UTILS_FUNCTIONS = new Set([
-  "hydra.utils.get_object",
-  "hydra.utils.get_class",
-  "hydra.utils.get_static_method",
-  "hydra.utils.get_method",
-]);
+export const HYDRA_UTILS_FUNCTION_NAMES = [
+  "get_object",
+  "get_class",
+  "get_method",
+  "get_static_method",
+] as const;
+
+export const HYDRA_UTILS_FUNCTIONS = new Set(
+  HYDRA_UTILS_FUNCTION_NAMES.map(f => `hydra.utils.${f}`),
+);
 
 // 診断関連
 export const DIAGNOSTIC_COLLECTION_NAME = "hydra-yaml";
