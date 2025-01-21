@@ -69,7 +69,6 @@ export async function validatePythonImportPath(importPath: string): Promise<Vali
   } catch (error) {
     const execError = error as ExecException;
     const errorOutput = execError.stderr || execError.stdout || execError.message || "Unknown error occurred";
-    console.log(errorOutput);
     // エラーメッセージの最後の行を取得
     const lastLine = errorOutput.trim().split("\n").pop() || "Unknown error occurred";
 
