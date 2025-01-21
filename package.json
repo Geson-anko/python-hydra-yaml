@@ -12,10 +12,19 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "languages": [
+      {
+        "id": "yaml"
+      }
+    ],
     "commands": [
       {
-        "command": "hydra-yaml.helloWorld",
-        "title": "Hello World"
+        "command": "hydra-yaml.selectPythonInterpreter",
+        "title": "Hydra: Select Python Interpreter"
+      },
+      {
+        "command": "hydra-yaml.selectRootConfigFile", 
+        "title": "Hydra: Select Root Config File"
       }
     ]
   },
