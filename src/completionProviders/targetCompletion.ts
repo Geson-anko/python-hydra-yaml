@@ -6,7 +6,7 @@ export class TargetCompletionProvider implements vscode.CompletionItemProvider {
     document: vscode.TextDocument,
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.CompletionItem[]> {
-    const linePrefix = document.lineAt(position).text.substr(0, position.character);
+    const linePrefix = document.lineAt(position).text.slice(0, position.character);
 
     // _target_: の後の補完
     if (linePrefix.includes(`${HYDRA_KEYWORDS.TARGET}:`)) {
