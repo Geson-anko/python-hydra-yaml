@@ -18,6 +18,8 @@ export const HYDRA_KEYWORDS = {
   TARGET: "_target_",
   PARTIAL: "_partial_",
   ARGS: "_args_",
+  RECURSIVE: "_recursive_",
+  CONVERT: "_convert_",
 };
 
 // Hydraのビルトイン関数
