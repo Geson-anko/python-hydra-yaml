@@ -49,18 +49,4 @@ module_path, object_name = module_parts
 module = importlib.import_module(module_path)
 getattr(module, object_name)
 `,
-  LIST_TOP_LEVEL_PACKAGES: `
-import pkgutil
-
-packages = [m.name for m in pkgutil.iter_modules()]
-print('\\n'.join(packages))
-`,
-
-  LIST_MODULE_ATTRIBUTES: `
-import importlib
-
-module = importlib.import_module("\${modulePath}")
-attrs = [attr for attr in dir(module) if not attr.startswith("_")]
-print('\\n'.join(attrs))
-`,
 } as const;
