@@ -52,3 +52,10 @@ module = importlib.import_module(module_path)
 getattr(module, object_name)
 `,
 } as const;
+
+export const ConvertComletions = {
+  NONE: "none",
+  PARTIAL: "partial",
+  OBJECT: "object",
+  ALL: "all",
+} as const;
