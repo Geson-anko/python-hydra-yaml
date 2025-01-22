@@ -24,10 +24,6 @@
     ],
     "commands": [
       {
-        "command": "hydra-yaml.selectPythonInterpreter",
-        "title": "Hydra: Select Python Interpreter"
-      },
-      {
         "command": "hydra-yaml.selectRootConfigFile",
         "title": "Hydra: Select Root Config File"
       }
