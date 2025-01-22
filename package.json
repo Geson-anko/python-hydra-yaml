@@ -22,12 +22,7 @@
         "id": "yaml"
       }
     ],
-    "commands": [
-      {
-        "command": "hydra-yaml.selectRootConfigFile",
-        "title": "Hydra: Select Root Config File"
-      }
-    ]
+    "commands": []
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
