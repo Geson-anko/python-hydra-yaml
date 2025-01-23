@@ -4,6 +4,14 @@ import { HYDRA_UTILS_FUNCTIONS } from "../constants";
 import { findRange } from "../utils/documentUtils";
 import { validatePythonImportPath } from "../utils/pythonUtils";
 
+/**
+ * Validates Python import paths in YAML files.
+ * Checks both direct _target_ paths and paths within Hydra utilities.
+ *
+ * @param yaml - Parsed YAML object to validate
+ * @param document - VS Code text document
+ * @returns Array of VS Code diagnostics for invalid paths
+ */
 export async function validateImportPaths(yaml: any, document: vscode.TextDocument): Promise<vscode.Diagnostic[]> {
   const diagnostics: vscode.Diagnostic[] = [];
 

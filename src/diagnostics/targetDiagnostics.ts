@@ -3,6 +3,14 @@ import * as vscode from "vscode";
 import { HYDRA_KEYWORDS, HYDRA_UTILS_FUNCTIONS } from "../constants";
 import { findRange } from "../utils/documentUtils";
 
+/**
+ * Validates Hydra _target_ configurations in YAML files.
+ * Checks syntax, required fields, and valid values for _partial_ and _convert_.
+ *
+ * @param yaml - Parsed YAML object to validate
+ * @param document - VS Code text document
+ * @returns Array of VS Code diagnostics for invalid configurations
+ */
 export async function validateTargets(yaml: any, document: vscode.TextDocument): Promise<vscode.Diagnostic[]> {
   const diagnostics: vscode.Diagnostic[] = [];
 

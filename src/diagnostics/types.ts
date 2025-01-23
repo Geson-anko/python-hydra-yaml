@@ -1,3 +1,7 @@
+/**
+ * Interface for diagnostic validation results.
+ */
+
 import * as vscode from "vscode";
 
 export interface DiagnosticResult {

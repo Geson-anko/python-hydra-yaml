@@ -13,6 +13,14 @@ interface CircularReferenceResult {
   cycle?: string[];
 }
 
+/**
+ * Validates relative path references in YAML files.
+ * Checks for circular references, file hierarchy violations, and missing references.
+ *
+ * @param yaml - Parsed YAML object to validate
+ * @param document - VS Code text document
+ * @returns Array of VS Code diagnostics for invalid references
+ */
 export async function validateRelativePaths(yaml: any, document: vscode.TextDocument): Promise<vscode.Diagnostic[]> {
   const diagnostics: vscode.Diagnostic[] = [];
 

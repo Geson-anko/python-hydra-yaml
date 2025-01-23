@@ -7,6 +7,12 @@ import { validateTargets } from "./targetDiagnostics";
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
+/**
+ * Initializes and manages YAML diagnostics for the extension.
+ * Sets up document change listeners and validation.
+ *
+ * @param context - VS Code extension context
+ */
 export function initDiagnostics(context: vscode.ExtensionContext) {
   diagnosticCollection = vscode.languages.createDiagnosticCollection(DIAGNOSTIC_COLLECTION_NAME);
   context.subscriptions.push(
