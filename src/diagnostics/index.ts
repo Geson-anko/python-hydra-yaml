@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { parse as parseYaml } from "yaml";
 import { DIAGNOSTIC_COLLECTION_NAME } from "../constants";
 import { validateImportPaths } from "./importPathDiagnostic";
+import { validateRelativePaths } from "./relativePath";
 import { validateTargets } from "./targetDiagnostics";
 
 let diagnosticCollection: vscode.DiagnosticCollection;
@@ -27,6 +28,7 @@ async function validateDocument(document: vscode.TextDocument) {
     diagnostics.push(
       ...(await validateImportPaths(yaml, document)),
       ...(await validateTargets(yaml, document)),
+      ...(await validateRelativePaths(yaml, document)),
     );
   } catch (error) {
     // YAMLパースエラーは無視
