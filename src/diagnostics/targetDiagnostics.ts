@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { HYDRA_KEYWORDS, HYDRA_UTILS_FUNCTIONS } from "../constants";
 import { findRange } from "../utils/documentUtils";
 import { validatePythonImportPath } from "../utils/pythonUtils";
+import { isHydraReference } from "../utils/referenceUtils";
 
 /**
  * Validates Hydra target configurations and Python import paths in YAML files.
@@ -18,85 +19,89 @@ export async function validateTargets(yaml: any, document: vscode.TextDocument):
       const targetRange = findRange(document, HYDRA_KEYWORDS.TARGET, targetValue);
       if (!targetRange) return;
 
-      // Syntax validation
-      if (!isValidTargetSyntax(targetValue)) {
-        diagnostics.push(
-          new vscode.Diagnostic(
-            targetRange,
-            "Invalid _target_ format. Must be a fully qualified import path (e.g. 'package.module.class')",
-            vscode.DiagnosticSeverity.Error,
-          ),
-        );
-      }
-
-      // Import path validation
-      if (HYDRA_UTILS_FUNCTIONS.has(targetValue)) {
-        if (!node.path) {
+      // Skip validation for Hydra references
+      if (!isHydraReference(targetValue)) {
+        // Syntax validation
+        if (!isValidTargetSyntax(targetValue)) {
           diagnostics.push(
             new vscode.Diagnostic(
               targetRange,
-              `'path' field is required when using ${targetValue}`,
+              "Invalid _target_ format. Must be a fully qualified import path (e.g. 'package.module.class')",
               vscode.DiagnosticSeverity.Error,
             ),
           );
+          return;
+        }
+
+        // Import path validation
+        if (HYDRA_UTILS_FUNCTIONS.has(targetValue)) {
+          if (!node.path) {
+            diagnostics.push(
+              new vscode.Diagnostic(
+                targetRange,
+                `'path' field is required when using ${targetValue}`,
+                vscode.DiagnosticSeverity.Error,
+              ),
+            );
+          } else if (!isHydraReference(node.path)) {
+            const pathRange = findRange(document, "path:", node.path);
+            if (pathRange) {
+              const pathValidation = await validatePythonImportPath(node.path);
+              if (!pathValidation.isValid && pathValidation.error) {
+                diagnostics.push(
+                  new vscode.Diagnostic(
+                    pathRange,
+                    pathValidation.error,
+                    vscode.DiagnosticSeverity.Error,
+                  ),
+                );
+              }
+            }
+          }
         } else {
-          const pathRange = findRange(document, "path:", node.path);
-          if (pathRange) {
-            const pathValidation = await validatePythonImportPath(node.path);
-            if (!pathValidation.isValid && pathValidation.error) {
+          const importValidation = await validatePythonImportPath(targetValue);
+          if (!importValidation.isValid && importValidation.error) {
+            diagnostics.push(
+              new vscode.Diagnostic(
+                targetRange,
+                importValidation.error,
+                vscode.DiagnosticSeverity.Error,
+              ),
+            );
+          }
+        }
+
+        // _partial_ validation
+        if (HYDRA_KEYWORDS.PARTIAL in node) {
+          const partialValue = node[HYDRA_KEYWORDS.PARTIAL];
+          if (typeof partialValue !== "boolean") {
+            const partialRange = findRange(document, HYDRA_KEYWORDS.PARTIAL, partialValue.toString());
+            if (partialRange) {
               diagnostics.push(
                 new vscode.Diagnostic(
-                  pathRange,
-                  pathValidation.error,
+                  partialRange,
+                  "_partial_ must be a boolean value",
                   vscode.DiagnosticSeverity.Error,
                 ),
               );
             }
           }
         }
-      } else {
-        const importValidation = await validatePythonImportPath(targetValue);
-        if (!importValidation.isValid && importValidation.error) {
-          diagnostics.push(
-            new vscode.Diagnostic(
-              targetRange,
-              importValidation.error,
-              vscode.DiagnosticSeverity.Error,
-            ),
-          );
-        }
-      }
 
-      // _partial_ validation
-      if (HYDRA_KEYWORDS.PARTIAL in node) {
-        const partialValue = node[HYDRA_KEYWORDS.PARTIAL];
-        if (typeof partialValue !== "boolean") {
-          const partialRange = findRange(document, HYDRA_KEYWORDS.PARTIAL, partialValue.toString());
-          if (partialRange) {
-            diagnostics.push(
-              new vscode.Diagnostic(
-                partialRange,
-                "_partial_ must be a boolean value",
-                vscode.DiagnosticSeverity.Error,
-              ),
-            );
-          }
-        }
-      }
-
-      // _convert_ validation
-      if (HYDRA_KEYWORDS.CONVERT in node) {
-        const convertValue = node[HYDRA_KEYWORDS.CONVERT];
-        if (!["none", "partial", "all", "object"].includes(convertValue)) {
-          const convertRange = findRange(document, HYDRA_KEYWORDS.CONVERT, convertValue);
-          if (convertRange) {
-            diagnostics.push(
-              new vscode.Diagnostic(
-                convertRange,
-                "_convert_ must be one of: none, partial, all, object",
-                vscode.DiagnosticSeverity.Error,
-              ),
-            );
+        // _convert_ validation
+        if (HYDRA_KEYWORDS.CONVERT in node) {
+          const convertValue = node[HYDRA_KEYWORDS.CONVERT];
+          if (!["none", "partial", "all", "object"].includes(convertValue)) {
+            const convertRange = findRange(document, HYDRA_KEYWORDS.CONVERT, convertValue);
+            if (convertRange) {
+              diagnostics.push(
+                new vscode.Diagnostic(
+                  convertRange,
+                  "_convert_ must be one of: none, partial, all, object",
+                  vscode.DiagnosticSeverity.Error,
+                ),
+              );
+            }
           }
         }
       }
