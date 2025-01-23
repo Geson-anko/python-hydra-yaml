@@ -50,6 +50,29 @@ module_path, object_name = module_parts
 module = importlib.import_module(module_path)
 getattr(module, object_name)
 `,
+  GET_OBJECT_LOCATION: `
+import inspect
+import importlib
+import json
+
+def get_object_location(path):
+   try:
+       module_path, obj_name = path.rsplit('.', 1)
+       module = importlib.import_module(module_path)
+       obj = getattr(module, obj_name)
+       
+       file_path = inspect.getfile(obj)
+       try:
+           source, line_no = inspect.getsourcelines(obj)
+           return {'filePath': file_path, 'lineNumber': line_no}
+       except:
+           return {'filePath': file_path, 'lineNumber': 1}
+   except Exception as e:
+       print(f'Error: {str(e)}', file=sys.stderr)
+       return None
+
+print(json.dumps(get_object_location('%s')))
+`,
 } as const;
 
 export const ConvertComletions = {

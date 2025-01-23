@@ -1,6 +1,7 @@
 import { PythonExtension } from "@vscode/python-extension";
 import { exec } from "child_process";
 import { promisify } from "util";
+import * as vscode from "vscode";
 import { PYTHON_SCRIPTS } from "../constants";
 
 /**
@@ -61,5 +62,26 @@ export async function validatePythonImportPath(importPath: string): Promise<{
       isValid: false,
       error: lastLine,
     };
+  }
+}
+
+interface LocationResult {
+  filePath: string;
+  lineNumber: number;
+}
+
+export async function getPythonObjectLocation(importPath: string): Promise<LocationResult | undefined> {
+  const pythonPath = await getActivePythonPath();
+  if (!pythonPath) return undefined;
+
+  try {
+    const script = PYTHON_SCRIPTS.GET_OBJECT_LOCATION.replace("%s", importPath);
+    const { stdout } = await execAsync(`"${pythonPath}" -c "${script}"`);
+    if (!stdout) return undefined;
+
+    return JSON.parse(stdout) as LocationResult;
+  } catch (error) {
+    console.error("Failed to get Python object location:", error);
+    return undefined;
   }
 }
