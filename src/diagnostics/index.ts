@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import { parse as parseYaml } from "yaml";
 import { DIAGNOSTIC_COLLECTION_NAME } from "../constants";
-import { validateImportPaths } from "./importPathDiagnostic";
 import { validateRelativePaths } from "./relativePath";
 import { validateTargets } from "./targetDiagnostics";
 
@@ -32,7 +31,6 @@ async function validateDocument(document: vscode.TextDocument) {
     const yaml = parseYaml(document.getText());
 
     diagnostics.push(
-      ...(await validateImportPaths(yaml, document)),
       ...(await validateTargets(yaml, document)),
       ...(await validateRelativePaths(yaml, document)),
     );
