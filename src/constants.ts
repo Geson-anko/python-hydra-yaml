@@ -1,18 +1,3 @@
-// 設定関連
-export const HYDRA_SETTINGS = {
-  PYTHON_PATH: "hydra.pythonPath",
-  CONFIG_ROOT: "hydra.config-root",
-};
-
-// コマンドID
-export const COMMANDS = {
-  SELECT_PYTHON_INTERPRETER: "hydra-yaml.selectPythonInterpreter",
-  SELECT_ROOT_CONFIG: "hydra-yaml.selectRootConfigFile",
-};
-
-// QuickPickアイテム
-export const CUSTOM_PATH_ITEM = "$(add) Enter custom path...";
-
 // Hydraの特殊キーワード
 export const HYDRA_KEYWORDS = {
   TARGET: "_target_",
