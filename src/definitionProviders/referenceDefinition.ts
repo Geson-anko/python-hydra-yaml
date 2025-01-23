@@ -25,54 +25,82 @@ export class ReferenceDefinitionProvider implements vscode.DefinitionProvider {
     const dotCount = (refPath.match(/^\.*/) || [""])[0].length;
     const targetPath = refPath.slice(dotCount);
 
+    const currentPath = this.getCurrentPath(document, position.line);
     const parsed = yaml.parse(document.getText());
-    return this.findLocationInYaml(document, parsed, targetPath.split("."));
+
+    return this.findLocationInYaml(document, parsed, currentPath, dotCount, targetPath);
+  }
+
+  private getCurrentPath(document: vscode.TextDocument, lineNumber: number): string[] {
+    const path: string[] = [];
+    let currentIndent = -1;
+
+    for (let i = 0; i <= lineNumber; i++) {
+      const line = document.lineAt(i).text;
+      const match = line.match(/^(\s*)([\w-]+):/);
+      if (!match) continue;
+
+      const [, indent, key] = match;
+      const indentLevel = indent.length;
+
+      if (currentIndent === -1 || indentLevel === 0) {
+        path.length = 0;
+        path.push(key);
+        currentIndent = indentLevel;
+      } else if (indentLevel > currentIndent) {
+        path.push(key);
+        currentIndent = indentLevel;
+      } else if (indentLevel === currentIndent) {
+        path.pop();
+        path.push(key);
+      } else {
+        while (path.length > 0 && indentLevel < currentIndent) {
+          path.pop();
+          currentIndent -= 2;
+        }
+        path.push(key);
+        currentIndent = indentLevel;
+      }
+    }
+    return path;
   }
 
   private findLocationInYaml(
     document: vscode.TextDocument,
     yamlObj: any,
-    pathParts: string[],
+    currentPath: string[],
+    dotCount: number,
+    targetPath: string,
   ): vscode.Location | undefined {
-    let current = yamlObj;
+    // カレントパスから必要な分だけ上に移動
+    let resolvedPath = [...currentPath];
+    resolvedPath.pop(); // 現在のキー名を除去
+    for (let i = 1; i < dotCount; i++) {
+      resolvedPath.pop();
+    }
+
+    // ターゲットパスが存在する場合は追加
+    if (targetPath) {
+      resolvedPath.push(...targetPath.split("."));
+    }
+
+    // パスに従ってYAMLをトラバース
+    let target = yamlObj;
     let lineNumber = 0;
 
-    for (const part of pathParts) {
-      if (Array.isArray(current)) {
-        const index = parseInt(part);
-        if (!isNaN(index) && current[index] !== undefined) {
-          // 配列要素を探す
-          let arrayStart = -1;
-          let elementCount = 0;
-
-          for (let i = 0; i < document.lineCount; i++) {
-            const line = document.lineAt(i).text;
-            if (line.trim().startsWith("- ")) {
-              if (arrayStart === -1) arrayStart = i;
-              if (elementCount === index) {
-                lineNumber = i;
-                break;
-              }
-              elementCount++;
-            }
-          }
-          current = current[index];
-          continue;
-        }
-      }
-
-      if (!current || !(part in current)) return undefined;
+    for (const segment of resolvedPath) {
+      if (!target || !(segment in target)) return undefined;
 
       // オブジェクトのキーを探す
       for (let i = lineNumber; i < document.lineCount; i++) {
         const line = document.lineAt(i).text;
-        if (line.trim().startsWith(`${part}:`)) {
+        if (line.trim().startsWith(`${segment}:`)) {
           lineNumber = i;
           break;
         }
       }
 
-      current = current[part];
+      target = target[segment];
     }
 
     const targetLine = document.lineAt(lineNumber);

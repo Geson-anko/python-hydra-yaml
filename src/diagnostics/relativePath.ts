@@ -105,28 +105,29 @@ export async function validateRelativePaths(yaml: any, document: vscode.TextDocu
   function resolveReference(path: string, dotCount: number, context: PathContext): {
     exists: boolean;
   } {
+    // カレントパスから必要な分だけ上に移動
     let targetPath = [...context.currentPath];
-    for (let i = 0; i < dotCount - 1; i++) {
+    targetPath.pop(); // 現在のキー名を除去
+    for (let i = 1; i < dotCount; i++) {
       targetPath.pop();
     }
 
+    // 参照先のパスと結合
     let target = context.rootObj;
-    const pathSegments = path.split(".");
+    for (const segment of targetPath) {
+      if (!target || typeof target !== "object" || !(segment in target)) {
+        return { exists: false };
+      }
+      target = target[segment];
+    }
 
-    for (const segment of pathSegments) {
-      if (Array.isArray(target)) {
-        const index = parseInt(segment);
-        if (isNaN(index) || index >= target.length) {
-          return { exists: false };
-        }
-        target = target[index];
-      } else if (target && typeof target === "object") {
-        if (!(segment in target)) {
+    // 相対パスで指定された部分を解決
+    if (path) {
+      for (const segment of path.split(".")) {
+        if (!target || typeof target !== "object" || !(segment in target)) {
           return { exists: false };
         }
         target = target[segment];
-      } else {
-        return { exists: false };
       }
     }
 
