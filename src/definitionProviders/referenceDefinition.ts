@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as yaml from "yaml";
 
 export class ReferenceDefinitionProvider implements vscode.DefinitionProvider {
   provideDefinition(
@@ -6,68 +7,81 @@ export class ReferenceDefinitionProvider implements vscode.DefinitionProvider {
     position: vscode.Position,
   ): vscode.ProviderResult<vscode.Definition> {
     const line = document.lineAt(position.line).text;
-
-    // カーソル位置が${...}の中にあるか確認
     const beforeCursor = line.substring(0, position.character);
     const afterCursor = line.substring(position.character);
     const lastDollar = beforeCursor.lastIndexOf("${");
     const nextBrace = afterCursor.indexOf("}");
 
-    if (lastDollar === -1 || nextBrace === -1) {
-      return undefined;
-    }
+    if (lastDollar === -1 || nextBrace === -1) return undefined;
 
     const refStart = lastDollar;
     const refEnd = position.character + nextBrace + 1;
     const fullRef = line.substring(refStart, refEnd);
 
     const refMatch = fullRef.match(/\${(\.+[^}]+)}/);
-    if (!refMatch) {
-      return undefined;
-    }
+    if (!refMatch) return undefined;
 
     const refPath = refMatch[1];
     const dotCount = (refPath.match(/^\.*/) || [""])[0].length;
     const targetPath = refPath.slice(dotCount);
 
-    return this.findDefinitionLocation(document, position.line, dotCount, targetPath);
+    const parsed = yaml.parse(document.getText());
+    return this.findLocationInYaml(document, parsed, targetPath.split("."));
   }
 
-  private findDefinitionLocation(
+  private findLocationInYaml(
     document: vscode.TextDocument,
-    currentLine: number,
-    dotCount: number,
-    targetPath: string,
+    yamlObj: any,
+    pathParts: string[],
   ): vscode.Location | undefined {
-    const pathParts = targetPath.split(".");
-    let lineStack: number[] = [];
+    let current = yamlObj;
+    let lineNumber = 0;
 
-    for (let searchLine = 0; searchLine < document.lineCount; searchLine++) {
-      const line = document.lineAt(searchLine).text;
-      const lineContent = line.trim();
-      const currentPart = pathParts[lineStack.length];
+    for (const part of pathParts) {
+      if (Array.isArray(current)) {
+        const index = parseInt(part);
+        if (!isNaN(index) && current[index] !== undefined) {
+          // 配列要素を探す
+          let arrayStart = -1;
+          let elementCount = 0;
 
-      if (currentPart === undefined) break;
-
-      if (lineContent.startsWith(`${currentPart}:`)) {
-        lineStack.push(searchLine);
-      } else if (lineContent.startsWith("- ") && currentPart === String(lineStack.length)) {
-        lineStack.push(searchLine);
+          for (let i = 0; i < document.lineCount; i++) {
+            const line = document.lineAt(i).text;
+            if (line.trim().startsWith("- ")) {
+              if (arrayStart === -1) arrayStart = i;
+              if (elementCount === index) {
+                lineNumber = i;
+                break;
+              }
+              elementCount++;
+            }
+          }
+          current = current[index];
+          continue;
+        }
       }
 
-      if (lineStack.length === pathParts.length) {
-        const lastLine = lineStack[lineStack.length - 1];
-        const targetLine = document.lineAt(lastLine);
-        const keyMatch = targetLine.text.match(/^[\s-]*([^:]+):/);
-        const keyStart = keyMatch ? targetLine.text.indexOf(keyMatch[1]) : 0;
+      if (!current || !(part in current)) return undefined;
 
-        return new vscode.Location(
-          document.uri,
-          new vscode.Position(lastLine, keyStart),
-        );
+      // オブジェクトのキーを探す
+      for (let i = lineNumber; i < document.lineCount; i++) {
+        const line = document.lineAt(i).text;
+        if (line.trim().startsWith(`${part}:`)) {
+          lineNumber = i;
+          break;
+        }
       }
+
+      current = current[part];
     }
 
-    return undefined;
+    const targetLine = document.lineAt(lineNumber);
+    const keyMatch = targetLine.text.match(/^[\s-]*([^:]+):/);
+    const keyStart = keyMatch ? targetLine.text.indexOf(keyMatch[1]) : 0;
+
+    return new vscode.Location(
+      document.uri,
+      new vscode.Position(lineNumber, keyStart),
+    );
   }
 }
