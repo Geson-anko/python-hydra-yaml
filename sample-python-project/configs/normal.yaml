@@ -1,4 +1,4 @@
-# 正常系テスト
+# Normal Test Cases
 model:
   _target_: torch.nn.Linear
   _convert_: none
@@ -15,7 +15,7 @@ hydra:
   _target_: hydra.utils.get_method
   path: torch.nn.functional.relu
 
-# ネストされた参照
+# Nested references.
 nested:
   value1: 100
   value2: ${.value1}

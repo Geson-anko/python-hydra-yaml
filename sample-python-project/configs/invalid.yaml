@@ -1,32 +1,33 @@
-# 異常系テスト
-# 無効な_target_パス
+# Error Test Cases
+
+# Invalid _target_ path
 bad_target:
   _target_: not.exist.module
 
-# 循環参照
+# Circular reference
 circular1:
   value: ${..circular2.value}
 circular2:
   value: ${..circular1.value}
 
-# 無効な_partial_値
+# Invalid _partial_ value
 bad_partial:
   _target_: torch.nn.Linear
   _partial_: "invalid"
 
-# 無効な_convert_値
+# Invalid _convert_ value
 bad_convert:
   _target_: torch.nn.Linear
   _convert_: "invalid"
 
-# ファイル階層を超える参照
+# Reference exceeding file hierarchy
 out_of_bounds:
   value: ${....value}
 
-# 存在しない参照
+# Non-existent reference
 missing_ref:
   value: ${not.exist.path}
 
-# hydra.utils関数で必要なpathフィールドの欠落
+# Missing path field for hydra.utils function
 missing_path:
   _target_: hydra.utils.get_class
