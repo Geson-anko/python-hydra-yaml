@@ -1,90 +1,180 @@
+// src/diagnostics/relativePath.ts
 import * as vscode from "vscode";
+import { findRange } from "../utils/documentUtils";
+
+interface PathContext {
+  currentPath: string[];
+  rootObj: any;
+}
 
 export async function validateRelativePaths(yaml: any, document: vscode.TextDocument): Promise<vscode.Diagnostic[]> {
   const diagnostics: vscode.Diagnostic[] = [];
 
-  function traverseObject(obj: any, path: string[] = [], parentObj: any = yaml) {
+  function traverseObject(obj: any, context: PathContext) {
     if (!obj || typeof obj !== "object") return;
 
-    // 文字列値内の${...}参照を検索
     Object.entries(obj).forEach(([key, value]) => {
+      const currentPath = [...context.currentPath, key];
+
       if (typeof value === "string") {
-        const matches = value.match(/\${(\.+[^}]+)}/g);
-        if (matches) {
-          matches.forEach(match => {
-            const relativePath = match.slice(2, -1); // ${...}の中身を取得
-            const dotCount = relativePath.match(/^\.+/)?.[0].length ?? 0;
-
-            // 現在の階層から相対パスを解決
-            let currentPath = [...path];
-            for (let i = 0; i < dotCount - 1; i++) {
-              currentPath.pop();
-            }
-
-            const targetPath = relativePath.slice(dotCount).split(".");
-            let target = parentObj;
-            let valid = true;
-
-            // パスを辿って値を検証
-            for (let i = 0; i < targetPath.length; i++) {
-              const segment = targetPath[i];
-              if (Array.isArray(target)) {
-                const index = parseInt(segment);
-                if (isNaN(index) || index >= target.length) {
-                  valid = false;
-                  break;
-                }
-                target = target[index];
-              } else if (target && typeof target === "object") {
-                if (!(segment in target)) {
-                  valid = false;
-                  break;
-                }
-                target = target[segment];
-              } else {
-                valid = false;
-                break;
-              }
-            }
-
-            // 診断結果を追加
-            const range = findReferenceRange(document, match);
-            if (range) {
-              if (!valid && dotCount > currentPath.length + 1) {
-                diagnostics.push(
-                  new vscode.Diagnostic(
-                    range,
-                    "Reference exceeds file root level",
-                    vscode.DiagnosticSeverity.Warning,
-                  ),
-                );
-              } else if (!valid) {
-                diagnostics.push(
-                  new vscode.Diagnostic(
-                    range,
-                    "Referenced path not found",
-                    vscode.DiagnosticSeverity.Error,
-                  ),
-                );
-              }
-            }
-          });
-        }
+        validateStringReferences(value, {
+          ...context,
+          currentPath,
+        });
       } else if (typeof value === "object") {
-        traverseObject(value, [...path, key], obj);
+        traverseObject(value, {
+          ...context,
+          currentPath,
+        });
       }
     });
   }
 
-  traverseObject(yaml);
+  function detectCircularReferences(
+    currentPath: string[],
+    relativePath: string,
+    dotCount: number,
+    yaml: any,
+    visited: Set<string> = new Set(),
+  ): boolean {
+    let targetPath = [...currentPath];
+    for (let i = 0; i < dotCount - 1; i++) {
+      targetPath.pop();
+    }
+    const pathSegments = relativePath.slice(dotCount).split(".");
+    const absolutePath = [...targetPath.slice(0, -1), ...pathSegments].join(".");
+
+    if (visited.has(absolutePath)) {
+      return true;
+    }
+    visited.add(absolutePath);
+
+    let target = yaml;
+    for (const segment of absolutePath.split(".")) {
+      if (!target || typeof target !== "object") break;
+      target = target[segment];
+    }
+
+    if (typeof target === "string") {
+      const matches = target.match(/\${(\.+[^}]+)}/g);
+      if (matches) {
+        for (const match of matches) {
+          const nextRelativePath = match.slice(2, -1);
+          const nextDotCount = nextRelativePath.match(/^\.+/)?.[0].length ?? 0;
+          if (
+            detectCircularReferences(
+              absolutePath.split("."),
+              nextRelativePath,
+              nextDotCount,
+              yaml,
+              new Set(visited),
+            )
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
+  function resolveReference(path: string, dotCount: number, context: PathContext): {
+    exists: boolean;
+  } {
+    let targetPath = [...context.currentPath];
+    for (let i = 0; i < dotCount - 1; i++) {
+      targetPath.pop();
+    }
+
+    let target = context.rootObj;
+    const pathSegments = path.split(".");
+
+    for (const segment of pathSegments) {
+      if (Array.isArray(target)) {
+        const index = parseInt(segment);
+        if (isNaN(index) || index >= target.length) {
+          return { exists: false };
+        }
+        target = target[index];
+      } else if (target && typeof target === "object") {
+        if (!(segment in target)) {
+          return { exists: false };
+        }
+        target = target[segment];
+      } else {
+        return { exists: false };
+      }
+    }
+
+    return { exists: true };
+  }
+
+  function validateStringReferences(value: string, context: PathContext) {
+    const matches = value.match(/\${(\.+[^}]+)}/g);
+    if (!matches) return;
+
+    matches.forEach(match => {
+      const relativePath = match.slice(2, -1);
+      const dotCount = relativePath.match(/^\.+/)?.[0].length ?? 0;
+
+      const range = findRange(document, "${", match);
+      if (!range) return;
+
+      // 循環参照チェック
+      const isCircular = detectCircularReferences(
+        context.currentPath,
+        relativePath,
+        dotCount,
+        context.rootObj,
+      );
+
+      if (isCircular) {
+        diagnostics.push(
+          new vscode.Diagnostic(
+            range,
+            "Circular reference detected",
+            vscode.DiagnosticSeverity.Error,
+          ),
+        );
+        return;
+      }
+
+      // ファイル階層超過チェック
+      if (dotCount > context.currentPath.length + 1) {
+        diagnostics.push(
+          new vscode.Diagnostic(
+            range,
+            "Reference exceeds file root level",
+            vscode.DiagnosticSeverity.Warning,
+          ),
+        );
+        return;
+      }
+
+      // 参照先の存在チェック
+      const resolvedRef = resolveReference(
+        relativePath.slice(dotCount),
+        dotCount,
+        context,
+      );
+
+      if (!resolvedRef.exists) {
+        diagnostics.push(
+          new vscode.Diagnostic(
+            range,
+            "Referenced path not found",
+            vscode.DiagnosticSeverity.Error,
+          ),
+        );
+      }
+    });
+  }
+
+  traverseObject(yaml, {
+    currentPath: [],
+    rootObj: yaml,
+  });
+
   return diagnostics;
-}
-
-function findReferenceRange(document: vscode.TextDocument, reference: string): vscode.Range | null {
-  const text = document.getText();
-  const start = text.indexOf(reference);
-  if (start === -1) return null;
-
-  const pos = document.positionAt(start);
-  return new vscode.Range(pos, document.positionAt(start + reference.length));
 }
