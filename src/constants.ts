@@ -20,7 +20,7 @@ export const HYDRA_UTILS_FUNCTIONS = new Set(
 );
 
 // 診断関連
-export const DIAGNOSTIC_COLLECTION_NAME = "hydra-yaml";
+export const DIAGNOSTIC_COLLECTION_NAME = "python-hydra-yaml";
 
 // Python関連
 export const PYTHON_SCRIPTS = {

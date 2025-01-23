@@ -1,1 +1,1 @@
-# This is the sample project for developing hydra-yaml extension.
+# This is the sample project for developing python-hydra-yaml extension.
