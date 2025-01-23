@@ -1,6 +1,10 @@
 import * as vscode from "vscode";
 import { HYDRA_KEYWORDS } from "../constants";
 
+/**
+ * Provides autocompletion for Hydra _args_ values in YAML files.
+ * Implements VS Code's CompletionItemProvider for YAML files with Hydra syntax.
+ */
 export class ArgsCompletionProvider implements vscode.CompletionItemProvider {
   provideCompletionItems(
     document: vscode.TextDocument,

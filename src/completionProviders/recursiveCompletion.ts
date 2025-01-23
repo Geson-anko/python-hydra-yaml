@@ -1,6 +1,10 @@
 import * as vscode from "vscode";
 import { HYDRA_KEYWORDS } from "../constants";
 
+/**
+ * Provides autocompletion for Hydra _recursive_ values in YAML files.
+ * Suggests true/false options with documentation about recursive instantiation.
+ */
 export class RecursiveCompletionProvider implements vscode.CompletionItemProvider {
   provideCompletionItems(
     document: vscode.TextDocument,

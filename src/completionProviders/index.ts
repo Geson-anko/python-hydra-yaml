@@ -5,6 +5,11 @@ import { PartialCompletionProvider } from "./partialCompletion";
 import { RecursiveCompletionProvider } from "./recursiveCompletion";
 import { TargetCompletionProvider } from "./targetCompletion";
 
+/**
+ * Registers all Hydra YAML completion providers with VS Code.
+ *
+ * @param context - VS Code extension context for registration
+ */
 export function registerCompletionProviders(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(

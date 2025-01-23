@@ -1,6 +1,10 @@
 import * as vscode from "vscode";
 import { ConvertComletions, HYDRA_KEYWORDS } from "../constants";
 
+/**
+ * Provides autocompletion for Hydra _convert_ values in YAML files.
+ * Supports 'none', 'partial', 'object', and 'all' conversion modes with documentation.
+ */
 export class ConvertCompletionProvider implements vscode.CompletionItemProvider {
   provideCompletionItems(
     document: vscode.TextDocument,

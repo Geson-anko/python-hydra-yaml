@@ -1,6 +1,10 @@
 import * as vscode from "vscode";
 import { HYDRA_KEYWORDS } from "../constants";
 
+/**
+ * Provides autocompletion for Hydra _partial_ values in YAML files.
+ * Suggests true/false options with documentation about partial instantiation.
+ */
 export class PartialCompletionProvider implements vscode.CompletionItemProvider {
   provideCompletionItems(
     document: vscode.TextDocument,

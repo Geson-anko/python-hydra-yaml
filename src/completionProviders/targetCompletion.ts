@@ -1,6 +1,10 @@
 import * as vscode from "vscode";
 import { HYDRA_KEYWORDS, HYDRA_UTILS_FUNCTIONS } from "../constants";
 
+/**
+ * Provides autocompletion for Hydra _target_ values in YAML files.
+ * Suggests available Hydra utility functions with documentation and path templates.
+ */
 export class TargetCompletionProvider implements vscode.CompletionItemProvider {
   provideCompletionItems(
     document: vscode.TextDocument,
