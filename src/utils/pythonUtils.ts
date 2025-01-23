@@ -1,11 +1,18 @@
-// src/utils/pythonUtils.ts
 import { PythonExtension } from "@vscode/python-extension";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { PYTHON_SCRIPTS } from "../constants";
 
+/**
+ * Executes shell commands asynchronously using promisified exec.
+ */
 export const execAsync = promisify(exec);
 
+/**
+ * Gets the path of the currently active Python interpreter.
+ *
+ * @returns The path to the active Python interpreter, or undefined if not found
+ */
 export async function getActivePythonPath(): Promise<string | undefined> {
   try {
     const pythonApi = await PythonExtension.api();
@@ -16,6 +23,12 @@ export async function getActivePythonPath(): Promise<string | undefined> {
   }
 }
 
+/**
+ * Validates if a Python import path exists and can be imported.
+ *
+ * @param importPath - The fully qualified Python import path to validate
+ * @returns Object containing validation result and error message if invalid
+ */
 export async function validatePythonImportPath(importPath: string): Promise<{
   isValid: boolean;
   error?: string;

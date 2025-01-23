@@ -7,6 +7,14 @@ interface Settings {
   [key: string]: any; // インデックスシグネチャを追加
 }
 
+/**
+ * Updates VS Code workspace settings by modifying settings.json.
+ * Creates .vscode directory and settings.json if they don't exist.
+ *
+ * @param key - The settings key to update
+ * @param value - The new value to set
+ * @throws Error if no workspace folder is found or if update fails
+ */
 export async function updateSettings(key: string, value: string) {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
   if (!workspaceFolder) {
