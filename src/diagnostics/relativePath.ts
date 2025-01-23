@@ -7,6 +7,12 @@ interface PathContext {
   rootObj: any;
 }
 
+interface CircularReferenceResult {
+  isCircular: boolean;
+  referencePath?: string;
+  cycle?: string[];
+}
+
 export async function validateRelativePaths(yaml: any, document: vscode.TextDocument): Promise<vscode.Diagnostic[]> {
   const diagnostics: vscode.Diagnostic[] = [];
 
@@ -36,7 +42,8 @@ export async function validateRelativePaths(yaml: any, document: vscode.TextDocu
     dotCount: number,
     yaml: any,
     visited: Set<string> = new Set(),
-  ): boolean {
+    referenceChain: string[] = [],
+  ): CircularReferenceResult {
     let targetPath = [...currentPath];
     for (let i = 0; i < dotCount - 1; i++) {
       targetPath.pop();
@@ -45,9 +52,17 @@ export async function validateRelativePaths(yaml: any, document: vscode.TextDocu
     const absolutePath = [...targetPath.slice(0, -1), ...pathSegments].join(".");
 
     if (visited.has(absolutePath)) {
-      return true;
+      const cycleStart = referenceChain.indexOf(absolutePath);
+      const cycle = referenceChain.slice(cycleStart).concat(absolutePath);
+      return {
+        isCircular: true,
+        referencePath: absolutePath,
+        cycle: cycle,
+      };
     }
+
     visited.add(absolutePath);
+    referenceChain.push(absolutePath);
 
     let target = yaml;
     for (const segment of absolutePath.split(".")) {
@@ -61,22 +76,22 @@ export async function validateRelativePaths(yaml: any, document: vscode.TextDocu
         for (const match of matches) {
           const nextRelativePath = match.slice(2, -1);
           const nextDotCount = nextRelativePath.match(/^\.+/)?.[0].length ?? 0;
-          if (
-            detectCircularReferences(
-              absolutePath.split("."),
-              nextRelativePath,
-              nextDotCount,
-              yaml,
-              new Set(visited),
-            )
-          ) {
-            return true;
+          const result = detectCircularReferences(
+            absolutePath.split("."),
+            nextRelativePath,
+            nextDotCount,
+            yaml,
+            new Set(visited),
+            [...referenceChain],
+          );
+          if (result.isCircular) {
+            return result;
           }
         }
       }
     }
 
-    return false;
+    return { isCircular: false };
   }
 
   function resolveReference(path: string, dotCount: number, context: PathContext): {
@@ -122,18 +137,22 @@ export async function validateRelativePaths(yaml: any, document: vscode.TextDocu
       if (!range) return;
 
       // 循環参照チェック
-      const isCircular = detectCircularReferences(
+      const circularResult = detectCircularReferences(
         context.currentPath,
         relativePath,
         dotCount,
         context.rootObj,
       );
 
-      if (isCircular) {
+      if (circularResult.isCircular) {
+        const cycleDescription = circularResult.cycle
+          ? `Reference cycle: ${circularResult.cycle.join(" -> ")}`
+          : `Circular reference with '${circularResult.referencePath}'`;
+
         diagnostics.push(
           new vscode.Diagnostic(
             range,
-            "Circular reference detected",
+            cycleDescription,
             vscode.DiagnosticSeverity.Error,
           ),
         );
