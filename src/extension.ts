@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { registerCompletionProviders } from "./completionProviders";
-import { clearDiagnostics, initDiagnostics } from "./utils/diagnostics";
+import { clearDiagnostics, initDiagnostics } from "./diagnostics";
 
 export function activate(context: vscode.ExtensionContext) {
   initDiagnostics(context);
