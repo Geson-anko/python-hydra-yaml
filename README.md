@@ -10,6 +10,8 @@ VSCode extension providing intelligent autocompletion and validation for Hydra c
 - Go-to-definition support for Python classes and Hydra references
 - Auto-completion for Hydra special keywords (`_partial_`, `_args_`, `_recursive_`, `_convert_`)
 
+![Error](./images/Errors.png)
+
 ## Requirements
 
 - Visual Studio Code 1.81.0+
