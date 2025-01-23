@@ -12,12 +12,12 @@ circular2:
 
 # Invalid _partial_ value
 bad_partial:
-  _target_: torch.nn.Linear
+  _target_: sample_python_project.YourClass
   _partial_: "invalid"
 
 # Invalid _convert_ value
 bad_convert:
-  _target_: torch.nn.Linear
+  _target_: sample_python_project.YourClass
   _convert_: "invalid"
 
 # Reference exceeding file hierarchy

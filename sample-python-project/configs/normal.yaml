@@ -1,19 +1,15 @@
 # Normal Test Cases
-model:
-  _target_: torch.nn.Linear
+sample_project:
+  _target_: sample_python_project.YourClass
   _convert_: none
-  in_features: 784
-  out_features: 10
-
-optimizer:
-  _target_: torch.optim.Adam
   _recursive_: true
   _partial_: true
-  lr: 0.001
+  arg1: 784
+  arg2: 10
 
 hydra:
   _target_: hydra.utils.get_method
-  path: torch.nn.functional.relu
+  path: sample_python_project.hello
 
 # Nested references.
 nested:
