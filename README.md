@@ -4,6 +4,8 @@
 
 VSCode extension providing intelligent autocompletion and validation for Hydra configuration files.
 
+About Hydra: <https://hydra.cc>
+
 ## Features
 
 - Python import path completion for `_target_` fields (Currently only hydra utility functions are supported...)
