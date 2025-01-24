@@ -40,7 +40,7 @@ The extension automatically activates for YAML files. Features include:
 
 ## Contributing
 
-Source code available at [https://github.com/Geson-anko/python-hydra-yaml]
+Source code available at <https://github.com/Geson-anko/python-hydra-yaml>
 
 ## License
 
