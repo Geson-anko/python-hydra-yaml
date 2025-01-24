@@ -9,3 +9,7 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+sample-python-project/**
+.devcontainer/**
+Dockerfile
+docker-compose.yml
