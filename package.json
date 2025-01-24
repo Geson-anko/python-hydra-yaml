@@ -1,18 +1,29 @@
 {
   "name": "python-hydra-yaml",
   "displayName": "python-hydra-yaml",
+  "publisher": "GesonAnko",
   "license": "MIT",
-  "description": "",
+  "icon": "./images/logo.png",
+  "description": "Helping to write complex hydra yaml configs.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.96.0"
   },
   "categories": [
-    "Other"
+    "Linters",
+    "Data Science",
+    "Machine Learning",
+    "Programming Languages"
   ],
+  "keywords": ["hydra", "python", "yaml", "omegaconf", "config"],
   "activationEvents": [
     "onLanguage:yaml"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Geson-anko/python-hydra-yaml.git"
+  },
+  "homepage": "https://github.com/Geson-anko/python-hydra-yaml",
   "extensionDependencies": [
     "ms-python.python"
   ],
