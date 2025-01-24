@@ -1,3 +1,5 @@
+![logo](./images/logo.png)
+
 # Python Hydra YAML
 
 VSCode extension providing intelligent autocompletion and validation for Hydra configuration files.
@@ -38,7 +40,7 @@ The extension automatically activates for YAML files. Features include:
 
 ## Contributing
 
-Source code available at []
+Source code available at [https://github.com/Geson-anko/python-hydra-yaml]
 
 ## License
 
