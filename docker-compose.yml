@@ -1,0 +1,13 @@
+services:
+  extension:
+    build: .
+    volumes:
+      - src:/workspace
+      - node_modules:/workspace/node_modules
+    command: sh -c "yarn watch"
+    environment:
+      - NODE_ENV=development
+
+volumes:
+  src:
+  node_modules:
