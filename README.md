@@ -18,7 +18,7 @@ About Hydra: <https://hydra.cc>
 
 ## Requirements
 
-- Visual Studio Code 1.81.0+
+- Visual Studio Code 1.96.0+
 - Python extension for VS Code
 - Python environment with Hydra installed
 
