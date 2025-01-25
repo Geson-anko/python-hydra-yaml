@@ -15,7 +15,6 @@ export function registerCompletionProviders(context: vscode.ExtensionContext) {
     vscode.languages.registerCompletionItemProvider(
       { scheme: "file", language: "yaml" },
       new TargetCompletionProvider(),
-      ":",
       " ",
       ".",
     ),
