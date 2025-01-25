@@ -5,7 +5,7 @@
   "license": "MIT",
   "icon": "./images/logo.png",
   "description": "Helping to write complex hydra yaml configs.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.96.0"
   },
