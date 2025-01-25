@@ -2,7 +2,7 @@ import { PythonExtension } from "@vscode/python-extension";
 import { exec } from "child_process";
 import * as fs from "fs";
 import { promisify } from "util";
-import { PYTHON_SCRIPTS } from "../constants";
+import { HYDRA_KEYWORDS, PYTHON_SCRIPTS } from "../constants";
 
 /**
  * Executes shell commands asynchronously using promisified exec.
@@ -136,4 +136,12 @@ export async function getCallableArguments(importPath: string): Promise<string[]
     console.error("Failed to get callable arguments:", error);
     return undefined;
   }
+}
+
+export async function getInstantiationArgs(importPath: string): Promise<string[] | undefined> {
+  let args = await getCallableArguments(importPath);
+  if (!args) {
+    return undefined;
+  }
+  return [HYDRA_KEYWORDS.PARTIAL, HYDRA_KEYWORDS.ARGS, ...args, HYDRA_KEYWORDS.CONVERT, HYDRA_KEYWORDS.RECURSIVE];
 }
