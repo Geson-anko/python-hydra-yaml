@@ -5,7 +5,7 @@ on: push
 jobs:
   deploy:
     name: Deploy Extension 📦
-    if: startsWith(github.ref, 'refs/tags/')  # only publish on tag pushes
+    if: startsWith(github.ref, 'refs/tags/') # only publish on tag pushes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
