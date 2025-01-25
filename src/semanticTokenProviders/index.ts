@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { TargetSemanticTokensProvider } from "./targetTokenProvider";
+import { TargetSemanticTokensProvider } from "./targetSemanticTokenProvider";
 
 /**
  * Registers semantic token providers for the extension
