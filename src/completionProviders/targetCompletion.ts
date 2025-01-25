@@ -79,8 +79,8 @@ export class TargetCompletionProvider implements vscode.CompletionItemProvider {
 
       if (parts.length <= 1) {
         const { stdout } = await execAsync(`"${pythonPath}" -c "${PYTHON_SCRIPTS.LIST_TOP_LEVEL_PACKAGES}"`);
-        const packages = stdout.split("\n").filter(Boolean);
-
+        let packages = stdout.split("\n").filter(Boolean);
+        packages.unshift("builtins"); // builtin関数の追加
         return [
           ...initialItems,
           ...packages.map(pkg => {
