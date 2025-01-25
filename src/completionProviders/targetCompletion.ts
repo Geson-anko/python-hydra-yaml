@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { parse as yamlParse } from "yaml";
 import { HYDRA_KEYWORDS, HYDRA_UTILS_FUNCTIONS, PYTHON_SCRIPTS } from "../constants";
 import { execAsync, getActivePythonPath } from "../utils/pythonUtils";
 
@@ -8,6 +9,21 @@ export class TargetCompletionProvider implements vscode.CompletionItemProvider {
     position: vscode.Position,
   ): Promise<vscode.CompletionItem[] | undefined> {
     const linePrefix = document.lineAt(position).text.slice(0, position.character);
+
+    if (linePrefix.includes("path:")) {
+      try {
+        const text = document.getText();
+        const parsed = yamlParse(text);
+        const currentObject = this.findCurrentObject(parsed, document, position);
+
+        if (currentObject?._target_ && HYDRA_UTILS_FUNCTIONS.has(currentObject._target_)) {
+          return await this.getPythonCompletions(linePrefix);
+        }
+      } catch (error) {
+        return undefined;
+      }
+      return undefined;
+    }
 
     if (!linePrefix.includes(`${HYDRA_KEYWORDS.TARGET}:`)) {
       return undefined;
@@ -20,9 +36,40 @@ export class TargetCompletionProvider implements vscode.CompletionItemProvider {
       return item;
     });
 
+    return await this.getPythonCompletions(linePrefix, items);
+  }
+
+  private findCurrentObject(yaml: any, document: vscode.TextDocument, position: vscode.Position): any {
+    const lineNumber = position.line;
+    const currentLine = document.lineAt(lineNumber).text;
+    const currentIndentMatch = currentLine.match(/^(\s*)/);
+    const currentIndent = currentIndentMatch ? currentIndentMatch[1].length : 0;
+
+    for (let i = lineNumber - 1; i >= 0; i--) {
+      const line = document.lineAt(i).text;
+      const indentMatch = line.match(/^(\s*)/);
+      const indent = indentMatch ? indentMatch[1].length : 0;
+
+      if (indent === currentIndent && line.includes("_target_:")) {
+        const blockText = document.getText(new vscode.Range(i, 0, lineNumber + 1, 0));
+        try {
+          const parsed = yamlParse(blockText);
+          return parsed;
+        } catch (e) {
+          return null;
+        }
+      }
+    }
+    return null;
+  }
+
+  private async getPythonCompletions(
+    linePrefix: string,
+    initialItems: vscode.CompletionItem[] = [],
+  ): Promise<vscode.CompletionItem[] | undefined> {
     const pythonPath = await getActivePythonPath();
     if (!pythonPath) {
-      return items;
+      return initialItems;
     }
 
     try {
@@ -35,7 +82,7 @@ export class TargetCompletionProvider implements vscode.CompletionItemProvider {
         const packages = stdout.split("\n").filter(Boolean);
 
         return [
-          ...items,
+          ...initialItems,
           ...packages.map(pkg => {
             const item = new vscode.CompletionItem(pkg, vscode.CompletionItemKind.Module);
             item.insertText = pkg;
@@ -57,8 +104,7 @@ export class TargetCompletionProvider implements vscode.CompletionItemProvider {
         });
       }
     } catch (error) {
-      console.error("Failed to get Python completions:", error);
-      return items;
+      return initialItems;
     }
   }
 }
