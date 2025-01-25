@@ -24,6 +24,7 @@ export const DIAGNOSTIC_COLLECTION_NAME = "python-hydra-yaml";
 
 // Python関連
 export const PYTHON_SCRIPTS = {
+  IMPORT_HYDRA: `import hydra`,
   IMPORT_CHECK_TEMPLATE: `
 import importlib
 

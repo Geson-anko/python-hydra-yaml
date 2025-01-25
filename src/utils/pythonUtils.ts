@@ -28,6 +28,20 @@ export async function getActivePythonPath(): Promise<string | undefined> {
   }
 }
 
+export async function isHydraExists(): Promise<boolean> {
+  try {
+    const pythonPath = await getActivePythonPath();
+    if (!pythonPath) {
+      return false;
+    }
+
+    await execAsync(`"${pythonPath}" -c "${PYTHON_SCRIPTS.IMPORT_HYDRA}"`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Validates if a Python import path exists and can be imported.
  *

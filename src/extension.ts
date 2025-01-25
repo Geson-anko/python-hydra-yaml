@@ -3,7 +3,7 @@ import { registerCompletionProviders } from "./completionProviders";
 import { registerDefinitionProviders } from "./definitionProviders";
 import { clearDiagnostics, initDiagnostics } from "./diagnostics";
 import { registerSemanticTokenProviders } from "./semanticTokenProviders";
-import { getActivePythonPath } from "./utils/pythonUtils";
+import { getActivePythonPath, isHydraExists } from "./utils/pythonUtils";
 
 export async function activate(context: vscode.ExtensionContext) {
   const pythonPath = await getActivePythonPath();
@@ -16,6 +16,13 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.executeCommand("python.setInterpreter");
       }
     });
+    return;
+  }
+
+  if (!await isHydraExists()) {
+    vscode.window.showErrorMessage(
+      "Hydra is required for this extension. Please install it using 'pip install hydra-core'",
+    );
     return;
   }
 
