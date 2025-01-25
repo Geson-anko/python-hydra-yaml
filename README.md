@@ -10,7 +10,7 @@ About Hydra: <https://hydra.cc>
 
 ## Features
 
-- Python import path completion for `_target_` fields (Currently only hydra utility functions are supported...)
+- Python import path completion for `_target_` fields.
 - Reference validation for accessing other config values within the same file using relative paths (`${.value}`, `${..value}`)
 - Real-time validation of Python imports
 - Go-to-definition support for Python classes and Hydra references
