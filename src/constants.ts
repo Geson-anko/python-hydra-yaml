@@ -65,8 +65,8 @@ print('\\n'.join(packages))
 `,
   LIST_MODULE_ATTRIBUTES: `
 import importlib
-module = importlib.import_module("\${modulePath}")
-attrs = [attr for attr in dir(module) if not attr.startswith("_")]
+module = importlib.import_module('\${modulePath}')
+attrs = [attr for attr in dir(module) if not attr.startswith('_')]
 print('\\n'.join(attrs))
 `,
 } as const;
