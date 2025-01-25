@@ -69,6 +69,20 @@ module = importlib.import_module('\${modulePath}')
 attrs = [attr for attr in dir(module) if not attr.startswith('_')]
 print('\\n'.join(attrs))
 `,
+  CHECK_CALLABLE_TEMPLATE: `
+import importlib
+import inspect
+
+def check_callable(path):
+    module_path, obj_name = path.rsplit('.', 1)
+    module = importlib.import_module(module_path)
+    obj = getattr(module, obj_name)
+    return inspect.isclass(obj) or callable(obj)
+
+is_callable = check_callable('%s')
+if not is_callable:
+    print('Warning: %s is not callable')
+`,
 } as const;
 
 export const ConvertComletions = {

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { HYDRA_KEYWORDS, HYDRA_UTILS_FUNCTIONS } from "../constants";
 import { findRange } from "../utils/documentUtils";
-import { validatePythonImportPath } from "../utils/pythonUtils";
+import { isCallable, validatePythonImportPath } from "../utils/pythonUtils";
 import { isHydraReference } from "../utils/referenceUtils";
 
 /**
@@ -68,6 +68,17 @@ export async function validateTargets(yaml: any, document: vscode.TextDocument):
                 vscode.DiagnosticSeverity.Error,
               ),
             );
+          } else {
+            const isCallableObj = await isCallable(targetValue);
+            if (!isCallableObj) {
+              diagnostics.push(
+                new vscode.Diagnostic(
+                  targetRange,
+                  `Warning: '${targetValue}' is not callable`,
+                  vscode.DiagnosticSeverity.Warning,
+                ),
+              );
+            }
           }
         }
 

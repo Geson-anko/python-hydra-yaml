@@ -65,6 +65,25 @@ export async function validatePythonImportPath(importPath: string): Promise<{
   }
 }
 
+/**
+ * Checks if a Python import path refers to a callable object.
+ *
+ * @param importPath - The fully qualified Python import path to check
+ * @returns True if the object is callable, false otherwise
+ */
+export async function isCallable(importPath: string): Promise<boolean> {
+  const pythonPath = await getActivePythonPath();
+  if (!pythonPath) return false;
+
+  try {
+    const script = PYTHON_SCRIPTS.CHECK_CALLABLE_TEMPLATE.replace(/%s/g, importPath);
+    const { stdout } = await execAsync(`"${pythonPath}" -c "${script}"`);
+    return !stdout.includes("Warning");
+  } catch {
+    return false;
+  }
+}
+
 interface LocationResult {
   filePath: string;
   lineNumber: number;

@@ -5,3 +5,5 @@ def hello() -> str:
 class YourClass:
     def __init__(self, arg1, arg2):
         pass
+
+CONSTANT = "const"
