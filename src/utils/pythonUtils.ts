@@ -122,3 +122,18 @@ export async function getPythonObjectLocation(importPath: string): Promise<Locat
     return undefined;
   }
 }
+
+export async function getCallableArguments(importPath: string): Promise<string[] | undefined> {
+  const pythonPath = await getActivePythonPath();
+  if (!pythonPath) return undefined;
+
+  try {
+    const script = PYTHON_SCRIPTS.GET_CALLABLE_ARGS.replace("%s", importPath);
+    const { stdout } = await execAsync(`"${pythonPath}" -c "${script}"`);
+    if (!stdout) return undefined;
+    return JSON.parse(stdout) as string[];
+  } catch (error) {
+    console.error("Failed to get callable arguments:", error);
+    return undefined;
+  }
+}

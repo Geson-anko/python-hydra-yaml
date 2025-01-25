@@ -84,6 +84,27 @@ is_callable = check_callable('%s')
 if not is_callable:
     print('Warning: %s is not callable')
 `,
+  GET_CALLABLE_ARGS: `
+import inspect
+import hydra.utils
+import json
+
+def get_callable_args(path):
+    try:
+        obj = hydra.utils.get_object('%s')
+        if inspect.isclass(obj):
+            sig = inspect.signature(obj.__init__)
+        else:
+            sig = inspect.signature(obj)
+        params = [name for name, param in sig.parameters.items() 
+                 if name != 'self']
+        return params
+    except Exception as e:
+        print(f'Error: {str(e)}', file=sys.stderr)
+        return None
+
+print(json.dumps(get_callable_args('%s')))
+`,
 } as const;
 
 export const ConvertComletions = {
