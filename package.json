@@ -34,7 +34,21 @@
         "id": "yaml"
       }
     ],
-    "commands": []
+    "commands": [],
+    "semanticTokenTypes": [
+      {
+        "id": "importPath",
+        "superType": "type",
+        "description": "Python import path in _target_ values"
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "scopes": {
+          "importPath": ["entity.name.type.module.python"]
+        }
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
