@@ -1,7 +1,7 @@
 import { PythonExtension } from "@vscode/python-extension";
 import { exec } from "child_process";
+import * as fs from "fs";
 import { promisify } from "util";
-import * as vscode from "vscode";
 import { PYTHON_SCRIPTS } from "../constants";
 
 /**
@@ -18,7 +18,11 @@ export async function getActivePythonPath(): Promise<string | undefined> {
   try {
     const pythonApi = await PythonExtension.api();
     const activePath = pythonApi.environments.getActiveEnvironmentPath();
-    return activePath?.path;
+    const path = activePath?.path;
+    if (!fs.existsSync(path)) {
+      return undefined;
+    }
+    return path;
   } catch {
     return undefined;
   }
