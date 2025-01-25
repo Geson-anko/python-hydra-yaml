@@ -6,6 +6,8 @@ VSCode extension providing intelligent autocompletion and validation for Hydra c
 
 About Hydra: <https://hydra.cc>
 
+**WARNING ⚠️: This extension conflict with [`redhat.vscode-yaml`](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)**
+
 ## Features
 
 - Python import path completion for `_target_` fields (Currently only hydra utility functions are supported...)
