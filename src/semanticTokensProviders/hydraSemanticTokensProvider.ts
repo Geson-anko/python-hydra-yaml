@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { HYDRA_KEYWORDS, HYDRA_UTILS_FUNCTIONS } from "../constants";
 
-export class TargetSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
+export class HydraSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
   private readonly legend = new vscode.SemanticTokensLegend(["importPath"]);
 
   getLegend(): vscode.SemanticTokensLegend {

@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
-import { TargetSemanticTokensProvider } from "./targetSemanticTokenProvider";
+import { HydraSemanticTokensProvider } from "./hydraSemanticTokensProvider";
 
 /**
  * Registers semantic token providers for the extension
  */
 export function registerSemanticTokenProviders(context: vscode.ExtensionContext) {
   const selector = { language: "yaml", pattern: "**/*.yaml" };
-  const targetProvider = new TargetSemanticTokensProvider();
+  const targetProvider = new HydraSemanticTokensProvider();
 
   context.subscriptions.push(
     vscode.languages.registerDocumentSemanticTokensProvider(
