@@ -42,22 +42,37 @@ export class NewLineCompletionProvider implements vscode.CompletionItemProvider 
     });
   }
   private getCurrentBlock(document: vscode.TextDocument, position: vscode.Position): any {
+    const lines: string[] = [];
     const currentLine = document.lineAt(position).text;
-    const currentIndent = currentLine.match(/^(\s*)/)?.[1].length ?? 0;
-    let blockStart = position.line;
+    const targetIndent = currentLine.match(/^(\s*)/)?.[1].length ?? 0;
 
+    // Find the start of the current block by going up until we find a line with less indent
+    let blockStart = position.line;
     for (let i = position.line - 1; i >= 0; i--) {
       const line = document.lineAt(i).text;
       const indent = line.match(/^(\s*)/)?.[1].length ?? 0;
-      if (indent < currentIndent) {
-        blockStart = i;
+
+      if (indent < targetIndent) {
+        blockStart = i + 1; // Start from the first line with our target indent
         break;
+      }
+      if (indent === targetIndent && line.trim()) {
+        blockStart = i; // Include lines at the same indent level
+      }
+    }
+
+    // Collect all lines in the current block
+    for (let i = blockStart; i < position.line; i++) {
+      const line = document.lineAt(i).text;
+      const indent = line.match(/^(\s*)/)?.[1].length ?? 0;
+
+      if (indent >= targetIndent) {
+        lines.push(line);
       }
     }
 
     try {
-      const blockText = document.getText(new vscode.Range(blockStart, 0, position.line, 0));
-      return yamlParse(blockText);
+      return yamlParse(lines.join("\n")) || {};
     } catch {
       return {};
     }
