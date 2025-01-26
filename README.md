@@ -6,17 +6,29 @@ VSCode extension providing intelligent autocompletion and validation for Hydra c
 
 About Hydra: <https://hydra.cc>
 
-**WARNING ⚠️: This extension conflict with [`redhat.vscode-yaml`](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)**
+**WARNING ⚠️: This extension conflicts with [`redhat.vscode-yaml`](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)**
 
 ## Features
 
-- Python import path completion for `_target_` fields.
-- Reference validation for accessing other config values within the same file using relative paths (`${.value}`, `${..value}`)
-- Real-time validation of Python imports
-- Go-to-definition support for Python classes and Hydra references
-- Auto-completion for Hydra special keywords (`_partial_`, `_args_`, `_recursive_`, `_convert_`)
+### Intelligent Completion
 
-![Error](./images/Errors.png)
+- Python import path completion for `_target_` fields with active environment inspection
+- Smart completion for Hydra special keywords (`_partial_`, `_args_`, `_recursive_`, `_convert_`) with documentation
+- Argument completion based on target Python classes
+
+### Validation & Diagnostics
+
+- Real-time Python import path validation against active environment
+- Single-file circular reference detection
+- Path hierarchy violation checks
+- Hydra keyword value validation
+- Missing reference validation within files
+
+### Navigation
+
+- Go-to-definition for Python classes and methods
+- Jump to reference definitions within the same file
+- Documentation preview on hover for Hydra keywords
 
 ## Requirements
 
@@ -24,27 +36,30 @@ About Hydra: <https://hydra.cc>
 - Python extension for VS Code
 - Python environment with Hydra installed
 
+## Setup
+
+1. Install the extension from VSCode marketplace
+2. Select your Python interpreter: `Python: Select Interpreter`
+
 ## Usage
 
-The extension automatically activates for YAML files. Features include:
+The extension activates automatically for `.yaml` files. Features are accessible through:
 
-- Select your python environment with `Python: Select Interpreter`
-- Type `_target_:` to trigger Python import path completion
-- Use `${.}` or `${..}` for relative references within the same file
-- Hover over references to preview values and see documentation
-- `F12` or right-click → Go to Definition to jump to Python source or referenced values
+- Typing triggers like `_target_:` or `${`
+- IntelliSense (Ctrl+Space)
+- Go to Definition (F12)
 
-## Known Issues
+## Known Issues & Limitations
 
-- File watching for config changes outside VSCode is not yet implemented
-- Some complex circular reference patterns may not be detected
-- Python import validation requires the interpreter to have all referenced packages installed
-- Completion triggers are limited to space characters, which may restrict completion functionality
-- Cross-file absolute path references are not supported
+- Cross-file reference validation and completion not supported
+- Complex circular reference patterns may not be fully detected
+- Python import validation requires packages installed in interpreter
+- Some completion triggers limited to specific characters
+- No file watching for external config changes
 
 ## Contributing
 
-Source code available at <https://github.com/Geson-anko/python-hydra-yaml>
+Source code: <https://github.com/Geson-anko/python-hydra-yaml>
 
 ## License
 
