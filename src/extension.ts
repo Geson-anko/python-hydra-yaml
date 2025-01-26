@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { registerCompletionProviders } from "./completionProviders";
 import { registerDefinitionProviders } from "./definitionProviders";
 import { clearDiagnostics, initDiagnostics } from "./diagnostics";
-import { registerSemanticTokenProviders } from "./semanticTokenProviders";
+import { registerSemanticTokenProviders } from "./semanticTokensProviders";
 import { getActivePythonPath, isHydraExists } from "./utils/pythonUtils";
 
 export async function activate(context: vscode.ExtensionContext) {
