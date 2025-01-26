@@ -35,7 +35,15 @@ async function validateDocument(document: vscode.TextDocument) {
       ...(await validateRelativePaths(yaml, document)),
     );
   } catch (error) {
-    // YAMLパースエラーは無視
+    if (error instanceof Error) {
+      diagnostics.push(
+        new vscode.Diagnostic(
+          new vscode.Range(0, 0, document.lineCount, 0),
+          `YAML parse error: ${error.message}`,
+          vscode.DiagnosticSeverity.Error,
+        ),
+      );
+    }
   }
 
   diagnosticCollection.set(document.uri, diagnostics);

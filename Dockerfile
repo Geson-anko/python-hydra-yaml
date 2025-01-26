@@ -3,7 +3,10 @@ FROM node:23-alpine
 WORKDIR /workspace
 
 # 開発に必要なツールをインストール
-RUN apk add --no-cache git python3
+RUN apk add --no-cache git git-lfs python3
+
+# Git LFS を設定
+RUN git lfs install
 
 # package.jsonとyarn.lockを先にコピー
 COPY package.json yarn.lock ./

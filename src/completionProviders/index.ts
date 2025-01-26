@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { ArgsCompletionProvider } from "./argsCompletion";
 import { ConvertCompletionProvider } from "./convertCompletion";
+import { NewLineCompletionProvider } from "./newLineCompletionProvider";
 import { PartialCompletionProvider } from "./partialCompletion";
 import { RecursiveCompletionProvider } from "./recursiveCompletion";
 import { TargetCompletionProvider } from "./targetCompletion";
@@ -41,6 +42,11 @@ export function registerCompletionProviders(context: vscode.ExtensionContext) {
       new ConvertCompletionProvider(),
       ":",
       " ",
+    ),
+    vscode.languages.registerCompletionItemProvider(
+      { scheme: "file", language: "yaml" },
+      new NewLineCompletionProvider(),
+      "\n",
     ),
   );
 }

@@ -4,6 +4,10 @@
 bad_target:
   _target_: not.exist.module
 
+# `_target_` is not callable
+target_is_not_callable:
+  _target_: sample_python_project.CONSTANT
+
 # Circular reference
 circular1:
   value: ${..circular2.value}

@@ -5,7 +5,7 @@
   "license": "MIT",
   "icon": "./images/logo.png",
   "description": "Helping to write complex hydra yaml configs.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "engines": {
     "vscode": "^1.96.0"
   },
@@ -34,7 +34,27 @@
         "id": "yaml"
       }
     ],
-    "commands": []
+    "commands": [],
+    "semanticTokenTypes": [
+      {
+        "id": "importPath",
+        "superType": "type",
+        "description": "Python import path in _target_ values"
+      },
+      {
+        "id": "reference",
+        "superType": "variable",
+        "description": "Config value references using ${} syntax"
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "scopes": {
+          "importPath": ["entity.name.type.module.python"],
+          "reference": ["variable.other.readwrite"]
+        }
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",

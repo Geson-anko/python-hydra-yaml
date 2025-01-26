@@ -24,49 +24,15 @@ export const DIAGNOSTIC_COLLECTION_NAME = "python-hydra-yaml";
 
 // Python関連
 export const PYTHON_SCRIPTS = {
-  IMPORT_CHECK_TEMPLATE: `
-import importlib
-
-module_parts = '%s'.rsplit('.', 1)
-if len(module_parts) <= 1:
-    raise ValueError(f'Invalid _target_ format: %s - must be a fully qualified object path')
-
-module_path, object_name = module_parts
-module = importlib.import_module(module_path)
-getattr(module, object_name)
-`,
-  GET_OBJECT_LOCATION: `
-import inspect
-import importlib
-import json
-
-def get_object_location(path):
-   try:
-       module_path, obj_name = path.rsplit('.', 1)
-       module = importlib.import_module(module_path)
-       obj = getattr(module, obj_name)
-       
-       file_path = inspect.getfile(obj)
-       try:
-           source, line_no = inspect.getsourcelines(obj)
-           return {'filePath': file_path, 'lineNumber': line_no}
-       except:
-           return {'filePath': file_path, 'lineNumber': 1}
-   except Exception as e:
-       print(f'Error: {str(e)}', file=sys.stderr)
-       return None
-
-print(json.dumps(get_object_location('%s')))
-`,
   LIST_TOP_LEVEL_PACKAGES: `
 import pkgutil
 packages = [m.name for m in pkgutil.iter_modules()]
 print('\\n'.join(packages))
 `,
   LIST_MODULE_ATTRIBUTES: `
-import importlib
-module = importlib.import_module('\${modulePath}')
-attrs = [attr for attr in dir(module) if not attr.startswith('_')]
+import hydra.utils
+obj = hydra.utils.get_object('\${modulePath}')
+attrs = [attr for attr in dir(obj) if not attr.startswith('_')]
 print('\\n'.join(attrs))
 `,
 } as const;

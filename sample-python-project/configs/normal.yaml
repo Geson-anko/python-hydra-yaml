@@ -7,6 +7,10 @@ sample_project:
   arg1: 784
   arg2: 10
 
+class_method:
+  _target_: sample_python_project.YourClass.cls_method
+  arg: 0
+
 hydra:
   _target_: hydra.utils.get_method
   path: sample_python_project.hello
