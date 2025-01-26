@@ -40,18 +40,21 @@ import sys
 def get_object_info(path):
    try:
        obj = hydra.utils.get_object(path)
-       
+       name = path.split('.')[-1] # Get the last part of the path
+
        info = {
            'isValid': True,
            'isCallable': callable(obj) or inspect.isclass(obj),
            'isClass': inspect.isclass(obj),
            'isModule': inspect.ismodule(obj),
            'isFunction': inspect.isfunction(obj) or inspect.ismethod(obj),
+           'isVariable': not (callable(obj) or inspect.isclass(obj) or inspect.ismodule(obj) or inspect.isfunction(obj)),
+           'isConstant': name.isupper(),
            'error': None,
            'location': None,
            'arguments': None
        }
-       
+
        try:
            info['location'] = {
                'filePath': inspect.getfile(obj),
@@ -77,6 +80,8 @@ def get_object_info(path):
            'isClass': False,
            'isModule': False,
            'isFunction': False,
+           'isVariable': False,
+           'isConstant': False,
            'location': None,
            'arguments': None
        }
@@ -91,6 +96,8 @@ interface ObjectInfo {
   isClass: boolean;
   isModule: boolean;
   isFunction: boolean;
+  isVariable: boolean;
+  isConstant: boolean;
   location?: {
     filePath: string;
     lineNumber: number;
