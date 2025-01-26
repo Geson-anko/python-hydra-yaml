@@ -40,12 +40,18 @@
         "id": "importPath",
         "superType": "type",
         "description": "Python import path in _target_ values"
+      },
+      {
+        "id": "reference",
+        "superType": "variable",
+        "description": "Config value references using ${} syntax"
       }
     ],
     "semanticTokenScopes": [
       {
         "scopes": {
-          "importPath": ["entity.name.type.module.python"]
+          "importPath": ["entity.name.type.module.python"],
+          "reference": ["variable.other.readwrite"]
         }
       }
     ]

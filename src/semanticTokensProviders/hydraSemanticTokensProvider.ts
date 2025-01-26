@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { HYDRA_KEYWORDS, HYDRA_UTILS_FUNCTIONS } from "../constants";
 
 export class HydraSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
-  private readonly legend = new vscode.SemanticTokensLegend(["importPath"]);
+  private readonly legend = new vscode.SemanticTokensLegend(["importPath", "reference"]);
 
   getLegend(): vscode.SemanticTokensLegend {
     return this.legend;
@@ -24,12 +24,20 @@ export class HydraSemanticTokensProvider implements vscode.DocumentSemanticToken
       if (targetMatch) {
         const startChar = targetMatch.index! + HYDRA_KEYWORDS.TARGET.length + 2;
         const length = targetMatch[1].length;
-        builder.push(lineIndex, startChar, length, 0);
+        builder.push(lineIndex, startChar, length, 0); // 0 for importPath
         currentTarget = targetMatch[1];
       } else if (pathMatch && currentTarget && HYDRA_UTILS_FUNCTIONS.has(currentTarget)) {
         const startChar = pathMatch.index! + "path:".length + 1;
         const pathValue = pathMatch[1].trim();
         builder.push(lineIndex, startChar, pathValue.length, 0);
+      }
+
+      // Highlight references
+      const referenceMatches = line.matchAll(/\${([^}]+)}/g);
+      for (const match of referenceMatches) {
+        const startChar = match.index! + 2; // Skip ${
+        const length = match[1].length;
+        builder.push(lineIndex, startChar, length, 1); // 1 for reference
       }
     }
 
