@@ -1,28 +1,18 @@
 import { PythonExtension } from "@vscode/python-extension";
 import { exec } from "child_process";
-import * as fs from "fs";
 import { promisify } from "util";
-import { HYDRA_KEYWORDS, PYTHON_SCRIPTS } from "../constants";
+import { HYDRA_KEYWORDS } from "../constants";
 
-/**
- * Executes shell commands asynchronously using promisified exec.
- */
 export const execAsync = promisify(exec);
 
 /**
  * Gets the path of the currently active Python interpreter.
- *
- * @returns The path to the active Python interpreter, or undefined if not found
  */
 export async function getActivePythonPath(): Promise<string | undefined> {
   try {
     const pythonApi = await PythonExtension.api();
     const activePath = pythonApi.environments.getActiveEnvironmentPath();
-    const path = activePath?.path;
-    if (!fs.existsSync(path)) {
-      return undefined;
-    }
-    return path;
+    return activePath?.path;
   } catch {
     return undefined;
   }
@@ -34,114 +24,140 @@ export async function isHydraExists(): Promise<boolean> {
     if (!pythonPath) {
       return false;
     }
-
-    await execAsync(`"${pythonPath}" -c "${PYTHON_SCRIPTS.IMPORT_HYDRA}"`);
+    await execAsync(`"${pythonPath}" -c "import hydra"`);
     return true;
   } catch {
     return false;
   }
 }
 
-/**
- * Validates if a Python import path exists and can be imported.
- *
- * @param importPath - The fully qualified Python import path to validate
- * @returns Object containing validation result and error message if invalid
- */
+const INSPECT_SCRIPT = `
+import hydra.utils
+import inspect
+import json
+import sys
+
+def get_object_info(path):
+   try:
+       obj = hydra.utils.get_object(path)
+       
+       info = {
+           'isValid': True,
+           'isCallable': callable(obj) or inspect.isclass(obj),
+           'isClass': inspect.isclass(obj),
+           'isModule': inspect.ismodule(obj),
+           'isFunction': inspect.isfunction(obj) or inspect.ismethod(obj),
+           'error': None,
+           'location': None,
+           'arguments': None
+       }
+       
+       try:
+           info['location'] = {
+               'filePath': inspect.getfile(obj),
+               'lineNumber': inspect.getsourcelines(obj)[1]
+           }
+       except Exception as e:
+           pass
+           
+       if info['isCallable']:
+           sig = inspect.signature(obj.__init__ if info['isClass'] else obj)
+           info['arguments'] = [
+               name for name, param in sig.parameters.items() 
+               if name != 'self'
+           ]
+       
+       return info
+       
+   except Exception as e:
+       return {
+           'isValid': False,
+           'error': str(e),
+           'isCallable': False,
+           'isClass': False,
+           'isModule': False,
+           'isFunction': False,
+           'location': None,
+           'arguments': None
+       }
+
+print(json.dumps(get_object_info('%s')))
+`;
+
+interface ObjectInfo {
+  isValid: boolean;
+  error?: string;
+  isCallable: boolean;
+  isClass: boolean;
+  isModule: boolean;
+  isFunction: boolean;
+  location?: {
+    filePath: string;
+    lineNumber: number;
+  };
+  arguments?: string[];
+}
+
+async function getObjectInfo(importPath: string): Promise<ObjectInfo | undefined> {
+  const pythonPath = await getActivePythonPath();
+  if (!pythonPath) return undefined;
+
+  try {
+    const script = INSPECT_SCRIPT.replace("%s", importPath);
+    const { stdout } = await execAsync(`"${pythonPath}" -c "${script}"`);
+    return JSON.parse(stdout) as ObjectInfo;
+  } catch (error) {
+    console.error("Failed to get object info:", error);
+    return undefined;
+  }
+}
+
 export async function validatePythonImportPath(importPath: string): Promise<{
   isValid: boolean;
   error?: string;
 }> {
-  try {
-    if (!importPath.includes(".")) {
-      return {
-        isValid: false,
-        error: "Invalid import path: must be a fully qualified path (e.g. package.module.object)",
-      };
-    }
-
-    const pythonPath = await getActivePythonPath();
-    if (!pythonPath) {
-      return {
-        isValid: false,
-        error: "No Python interpreter available. Please configure Python extension.",
-      };
-    }
-
-    const checkImport = PYTHON_SCRIPTS.IMPORT_CHECK_TEMPLATE.replace(/%s/g, importPath);
-    await execAsync(`"${pythonPath}" -c "${checkImport}"`);
-
-    return { isValid: true };
-  } catch (error: any) {
-    const errorOutput = error.stderr || error.stdout || error.message || "Unknown error occurred";
-    const lastLine = errorOutput.trim().split("\n").pop() || "Unknown error occurred";
-
+  if (!importPath.includes(".")) {
     return {
       isValid: false,
-      error: lastLine,
+      error: "Invalid import path: must be a fully qualified path",
     };
   }
+
+  const info = await getObjectInfo(importPath);
+  if (!info) {
+    return { isValid: false, error: "Failed to inspect object" };
+  }
+
+  return {
+    isValid: info.isValid,
+    error: info.error,
+  };
 }
 
-/**
- * Checks if a Python import path refers to a callable object.
- *
- * @param importPath - The fully qualified Python import path to check
- * @returns True if the object is callable, false otherwise
- */
 export async function isCallable(importPath: string): Promise<boolean> {
-  const pythonPath = await getActivePythonPath();
-  if (!pythonPath) return false;
-
-  try {
-    const script = PYTHON_SCRIPTS.CHECK_CALLABLE_TEMPLATE.replace(/%s/g, importPath);
-    const { stdout } = await execAsync(`"${pythonPath}" -c "${script}"`);
-    return !stdout.includes("Warning");
-  } catch {
-    return false;
-  }
+  const info = await getObjectInfo(importPath);
+  return info?.isCallable ?? false;
 }
 
-interface LocationResult {
-  filePath: string;
-  lineNumber: number;
-}
-
-export async function getPythonObjectLocation(importPath: string): Promise<LocationResult | undefined> {
-  const pythonPath = await getActivePythonPath();
-  if (!pythonPath) return undefined;
-
-  try {
-    const script = PYTHON_SCRIPTS.GET_OBJECT_LOCATION.replace("%s", importPath);
-    const { stdout } = await execAsync(`"${pythonPath}" -c "${script}"`);
-    if (!stdout) return undefined;
-
-    return JSON.parse(stdout) as LocationResult;
-  } catch (error) {
-    console.error("Failed to get Python object location:", error);
-    return undefined;
-  }
+export async function getPythonObjectLocation(importPath: string) {
+  const info = await getObjectInfo(importPath);
+  return info?.location;
 }
 
 export async function getCallableArguments(importPath: string): Promise<string[] | undefined> {
-  const pythonPath = await getActivePythonPath();
-  if (!pythonPath) return undefined;
-
-  try {
-    const script = PYTHON_SCRIPTS.GET_CALLABLE_ARGS.replace("%s", importPath);
-    const { stdout } = await execAsync(`"${pythonPath}" -c "${script}"`);
-    if (!stdout) return undefined;
-    return JSON.parse(stdout) as string[];
-  } catch (error) {
-    console.error("Failed to get callable arguments:", error);
-    return undefined;
-  }
+  const info = await getObjectInfo(importPath);
+  return info?.arguments;
 }
 
 export async function getInstantiationArgs(importPath: string): Promise<string[] | undefined> {
-  let args = await getCallableArguments(importPath);
-  if (!args) {
-    return undefined;
-  }
-  return [HYDRA_KEYWORDS.PARTIAL, HYDRA_KEYWORDS.ARGS, ...args, HYDRA_KEYWORDS.CONVERT, HYDRA_KEYWORDS.RECURSIVE];
+  const args = await getCallableArguments(importPath);
+  if (!args) return undefined;
+
+  return [
+    HYDRA_KEYWORDS.PARTIAL,
+    HYDRA_KEYWORDS.ARGS,
+    ...args,
+    HYDRA_KEYWORDS.CONVERT,
+    HYDRA_KEYWORDS.RECURSIVE,
+  ];
 }
