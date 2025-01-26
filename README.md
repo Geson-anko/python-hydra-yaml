@@ -10,6 +10,8 @@ About Hydra: <https://hydra.cc>
 
 ## Features
 
+![demo](./images/demo.gif)
+
 ### Intelligent Completion
 
 - Python import path completion for `_target_` fields with active environment inspection
