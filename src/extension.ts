@@ -4,6 +4,12 @@ import { registerDefinitionProviders } from "./definitionProviders";
 import { clearDiagnostics, initDiagnostics } from "./diagnostics";
 import { registerSemanticTokenProviders } from "./semanticTokensProviders";
 import { getActivePythonPath, isHydraExists } from "./utils/pythonUtils";
+import {
+  createPythonEnvStatusBar,
+  disposePythonEnvStatusBar,
+  registerEnvChangeListener,
+  updatePythonEnvStatus,
+} from "./utils/statusBarUtils";
 
 export async function activate(context: vscode.ExtensionContext) {
   const pythonPath = await getActivePythonPath();
@@ -26,6 +32,11 @@ export async function activate(context: vscode.ExtensionContext) {
     return;
   }
 
+  // ステータスバーの初期化
+  createPythonEnvStatusBar(context);
+  updatePythonEnvStatus(pythonPath);
+  registerEnvChangeListener(context);
+
   initDiagnostics(context);
   registerCompletionProviders(context);
   registerDefinitionProviders(context);
@@ -34,4 +45,5 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
   clearDiagnostics();
+  disposePythonEnvStatusBar();
 }
