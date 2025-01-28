@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { ArgsCompletionProvider } from "./argsCompletion";
 import { ConvertCompletionProvider } from "./convertCompletion";
-import { NewLineCompletionProvider } from "./newLineCompletionProvider";
+import { NewLineCompletionProvider } from "./newLineCompletion";
 import { PartialCompletionProvider } from "./partialCompletion";
 import { RecursiveCompletionProvider } from "./recursiveCompletion";
 import { TargetCompletionProvider } from "./targetCompletion";
