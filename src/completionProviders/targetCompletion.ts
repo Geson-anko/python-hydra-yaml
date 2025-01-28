@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 import { parse as yamlParse } from "yaml";
 import { HYDRA_KEYWORDS, HYDRA_UTILS_FUNCTIONS, PYTHON_SCRIPTS } from "../constants";
-import { execAsync, getActivePythonPath } from "../utils/pythonUtils";
+import { getCurrentBlock } from "../utils/documentUtils";
+import { execAsync, getActivePythonPath, getInstantiationArgs } from "../utils/pythonUtils";
 
 export class TargetCompletionProvider implements vscode.CompletionItemProvider {
   async provideCompletionItems(
@@ -9,7 +10,26 @@ export class TargetCompletionProvider implements vscode.CompletionItemProvider {
     position: vscode.Position,
   ): Promise<vscode.CompletionItem[] | undefined> {
     const linePrefix = document.lineAt(position).text.slice(0, position.character);
+    const currentBlock = getCurrentBlock(document, position);
 
+    // Handle _target_ arguments completion
+    if (currentBlock?._target_) {
+      const args = await getInstantiationArgs(currentBlock._target_);
+      if (!args) return undefined;
+
+      const existingKeys = new Set(Object.keys(currentBlock || {}));
+      const availableArgs = args.filter(arg => !existingKeys.has(arg));
+
+      return availableArgs.map(arg => {
+        const item = new vscode.CompletionItem(arg, vscode.CompletionItemKind.Property);
+        item.insertText = `${arg}: `;
+        item.command = { command: "editor.action.triggerSuggest", title: "Trigger Suggest" };
+        item.preselect = true;
+        return item;
+      });
+    }
+
+    // Handle path completion
     if (linePrefix.includes("path:")) {
       try {
         const text = document.getText();
@@ -25,11 +45,12 @@ export class TargetCompletionProvider implements vscode.CompletionItemProvider {
       return undefined;
     }
 
+    // Handle _target_ completion
     if (!linePrefix.includes(`${HYDRA_KEYWORDS.TARGET}:`)) {
       return undefined;
     }
 
-    const items = Array.from(HYDRA_UTILS_FUNCTIONS).map(func => {
+    const items = [HYDRA_KEYWORDS.ARGS, HYDRA_KEYWORDS.PARTIAL].map(func => {
       const item = new vscode.CompletionItem(func, vscode.CompletionItemKind.Function);
       item.insertText = new vscode.SnippetString(`${func}\npath: `);
       item.documentation = new vscode.MarkdownString(`Hydra utility function: ${func}`);
@@ -40,27 +61,8 @@ export class TargetCompletionProvider implements vscode.CompletionItemProvider {
   }
 
   private findCurrentObject(yaml: any, document: vscode.TextDocument, position: vscode.Position): any {
-    const lineNumber = position.line;
-    const currentLine = document.lineAt(lineNumber).text;
-    const currentIndentMatch = currentLine.match(/^(\s*)/);
-    const currentIndent = currentIndentMatch ? currentIndentMatch[1].length : 0;
-
-    for (let i = lineNumber - 1; i >= 0; i--) {
-      const line = document.lineAt(i).text;
-      const indentMatch = line.match(/^(\s*)/);
-      const indent = indentMatch ? indentMatch[1].length : 0;
-
-      if (indent === currentIndent && line.includes("_target_:")) {
-        const blockText = document.getText(new vscode.Range(i, 0, lineNumber + 1, 0));
-        try {
-          const parsed = yamlParse(blockText);
-          return parsed;
-        } catch (e) {
-          return null;
-        }
-      }
-    }
-    return null;
+    const currentBlock = getCurrentBlock(document, position);
+    return currentBlock || null;
   }
 
   private async getPythonCompletions(
