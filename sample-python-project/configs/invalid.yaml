@@ -27,6 +27,10 @@ bad_convert:
   _target_: sample_python_project.YourClass
   _convert_: "invalid"
 
+# Invalid _recursive_ value
+bad_recursive:
+  _recursive_: "invalid"
+
 # Reference exceeding file hierarchy
 out_of_bounds:
   value: ${....value}

@@ -3,6 +3,7 @@ import { parse as parseYaml } from "yaml";
 import { DIAGNOSTIC_COLLECTION_NAME } from "../constants";
 import { ConvertDiagnosticValidator } from "./convertDiagnostics";
 import { PartialDiagnosticValidator } from "./partialDiagnostics";
+import { RecursiveDiagnosticValidator } from "./recursiveDiagnostics";
 import { validateRelativePaths } from "./relativePath";
 import { TargetDiagnosticValidator } from "./targetDiagnostics";
 import { DiagnosticValidator } from "./types";
@@ -31,6 +32,7 @@ async function validateDocument(document: vscode.TextDocument) {
       new TargetDiagnosticValidator(document),
       new ConvertDiagnosticValidator(document),
       new PartialDiagnosticValidator(document),
+      new RecursiveDiagnosticValidator(document),
     ];
 
     for (const validator of validators) {
