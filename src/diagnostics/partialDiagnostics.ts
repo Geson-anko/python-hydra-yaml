@@ -15,7 +15,7 @@ export class PartialDiagnosticValidator extends DiagnosticValidator {
       if (range) {
         return [this.createDiagnostic({
           range,
-          message: "_partial_ must be a boolean value",
+          message: `${HYDRA_KEYWORDS.PARTIAL} must be a boolean value`,
           severity: vscode.DiagnosticSeverity.Error,
         })];
       }
