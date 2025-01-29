@@ -4,6 +4,9 @@
 bad_target:
   _target_: not.exist.module
 
+bad_target_not_import_path:
+  _target_: bad_import_path
+
 # `_target_` is not callable
 target_is_not_callable:
   _target_: sample_python_project.CONSTANT

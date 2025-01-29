@@ -1,17 +1,14 @@
 import * as vscode from "vscode";
 import { parse as parseYaml } from "yaml";
 import { DIAGNOSTIC_COLLECTION_NAME } from "../constants";
+import { ConvertDiagnosticValidator } from "./convertDiagnostics";
+import { PartialDiagnosticValidator } from "./partialDiagnostics";
 import { validateRelativePaths } from "./relativePath";
-import { validateTargets } from "./targetDiagnostics";
+import { TargetDiagnosticValidator } from "./targetDiagnostics";
+import { DiagnosticValidator } from "./types";
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
-/**
- * Initializes and manages YAML diagnostics for the extension.
- * Sets up document change listeners and validation.
- *
- * @param context - VS Code extension context
- */
 export function initDiagnostics(context: vscode.ExtensionContext) {
   diagnosticCollection = vscode.languages.createDiagnosticCollection(DIAGNOSTIC_COLLECTION_NAME);
   context.subscriptions.push(
@@ -27,13 +24,20 @@ export function initDiagnostics(context: vscode.ExtensionContext) {
 
 async function validateDocument(document: vscode.TextDocument) {
   const diagnostics: vscode.Diagnostic[] = [];
+
   try {
     const yaml = parseYaml(document.getText());
+    const validators = [
+      new TargetDiagnosticValidator(document),
+      new ConvertDiagnosticValidator(document),
+      new PartialDiagnosticValidator(document),
+    ];
 
-    diagnostics.push(
-      ...(await validateTargets(yaml, document)),
-      ...(await validateRelativePaths(yaml, document)),
-    );
+    for (const validator of validators) {
+      await validateNode(yaml, validator, diagnostics);
+    }
+
+    diagnostics.push(...await validateRelativePaths(yaml, document));
   } catch (error) {
     if (error instanceof Error) {
       diagnostics.push(
@@ -47,6 +51,21 @@ async function validateDocument(document: vscode.TextDocument) {
   }
 
   diagnosticCollection.set(document.uri, diagnostics);
+}
+
+async function validateNode(
+  node: any,
+  validator: DiagnosticValidator,
+  diagnostics: vscode.Diagnostic[],
+) {
+  if (!node || typeof node !== "object") return;
+
+  diagnostics.push(...await validator.validate(node));
+  for (const value of Object.values(node)) {
+    if (typeof value === "object") {
+      await validateNode(value, validator, diagnostics);
+    }
+  }
 }
 
 export function clearDiagnostics() {
