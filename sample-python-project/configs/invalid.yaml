@@ -42,3 +42,8 @@ missing_ref:
 # Missing path field for hydra.utils function
 missing_path:
   _target_: hydra.utils.get_class
+
+# Invalid function argument:
+invalid_func_arg:
+  _target_: sample_python_project.func
+  invalid_arg: "error"

@@ -22,3 +22,14 @@ nested:
   deep:
     value3: ${..value1}
     value4: ${.value3}
+
+# Argument validation
+valid_arg:
+  _target_: sample_python_project.func
+  arg0: 0
+  arg1: 1
+
+valid_var_kwds:
+  _target_: sample_python_project.func_with_var_kwds
+  arg: 0
+  free_arg: "free!"
