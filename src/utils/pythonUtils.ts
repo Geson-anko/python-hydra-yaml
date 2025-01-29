@@ -186,10 +186,10 @@ export async function getInstantiationArgs(importPath: string): Promise<string[]
 
 export async function hasVarPositionalParam(importPath: string): Promise<boolean> {
   const parameters = await getCallableParameters(importPath);
-  return parameters?.some(p => p.kind === "Parameter.VAR_POSITIONAL") ?? false;
+  return parameters?.some(p => p.kind === "VAR_POSITIONAL") ?? false;
 }
 
 export async function hasVarKeywordParam(importPath: string): Promise<boolean> {
   const parameters = await getCallableParameters(importPath);
-  return parameters?.some(p => p.kind === "Parameter.VAR_KEYWORD") ?? false;
+  return parameters?.some(p => p.kind === "VAR_KEYWORD") ?? false;
 }
