@@ -25,6 +25,7 @@ About Hydra: <https://hydra.cc>
 - Path hierarchy violation checks
 - Hydra keyword value validation
 - Missing reference validation within files
+- Instantiation target argument validation.
 
 ### Navigation
 
