@@ -10,7 +10,7 @@ About Hydra: <https://hydra.cc>
 
 ## Features
 
-![demo](./images/demo.gif)
+![demo](https://media.githubusercontent.com/media/Geson-anko/python-hydra-yaml/refs/heads/main/images/demo.gif)
 
 ### Intelligent Completion
 
