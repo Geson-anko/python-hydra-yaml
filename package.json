@@ -15,7 +15,13 @@
     "Machine Learning",
     "Programming Languages"
   ],
-  "keywords": ["hydra", "python", "yaml", "omegaconf", "config"],
+  "keywords": [
+    "hydra",
+    "python",
+    "yaml",
+    "omegaconf",
+    "config"
+  ],
   "activationEvents": [
     "onLanguage:yaml"
   ],
@@ -50,8 +56,12 @@
     "semanticTokenScopes": [
       {
         "scopes": {
-          "importPath": ["entity.name.type.module.python"],
-          "reference": ["variable.other.readwrite"]
+          "importPath": [
+            "entity.name.type.module.python"
+          ],
+          "reference": [
+            "variable.other.readwrite"
+          ]
         }
       }
     ]
@@ -74,8 +84,10 @@
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
     "dprint": "^0.48.0",
-    "eslint": "^9.16.0",
-    "typescript": "^5.7.2"
+    "eslint": "^9.19.0",
+    "globals": "^15.14.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.22.0"
   },
   "dependencies": {
     "@vscode/python-extension": "^1.0.5",
