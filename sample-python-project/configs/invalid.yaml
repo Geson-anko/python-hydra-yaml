@@ -4,6 +4,9 @@
 bad_target:
   _target_: not.exist.module
 
+bad_target_not_import_path:
+  _target_: bad_import_path
+
 # `_target_` is not callable
 target_is_not_callable:
   _target_: sample_python_project.CONSTANT
@@ -24,6 +27,10 @@ bad_convert:
   _target_: sample_python_project.YourClass
   _convert_: "invalid"
 
+# Invalid _recursive_ value
+bad_recursive:
+  _recursive_: "invalid"
+
 # Reference exceeding file hierarchy
 out_of_bounds:
   value: ${....value}
@@ -35,3 +42,8 @@ missing_ref:
 # Missing path field for hydra.utils function
 missing_path:
   _target_: hydra.utils.get_class
+
+# Invalid function argument:
+invalid_func_arg:
+  _target_: sample_python_project.func
+  invalid_arg: "error"

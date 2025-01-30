@@ -1,28 +1,19 @@
-import typescriptEslint from "@typescript-eslint/eslint-plugin";
-import tsParser from "@typescript-eslint/parser";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 
-export default [{
-  files: ["**/*.ts"],
-}, {
-  plugins: {
-    "@typescript-eslint": typescriptEslint,
+/** @type {import('eslint').Linter.Config[]} */
+export default [
+  { files: ["**/*.{js,mjs,cjs,ts}"] },
+  { languageOptions: { globals: globals.browser } },
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
   },
-
-  languageOptions: {
-    parser: tsParser,
-    ecmaVersion: 2022,
-    sourceType: "module",
-  },
-
-  rules: {
-    "@typescript-eslint/naming-convention": ["warn", {
-      selector: "import",
-      format: ["camelCase", "PascalCase"],
-    }],
-
-    curly: "warn",
-    eqeqeq: "warn",
-    "no-throw-literal": "warn",
-    semi: "warn",
-  },
-}];
+  ...tseslint.configs.recommended,
+  tseslint.config({
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  }),
+];

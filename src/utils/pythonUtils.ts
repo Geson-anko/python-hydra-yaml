@@ -36,11 +36,12 @@ import hydra.utils
 import inspect
 import json
 import sys
+from inspect import Parameter
 
 def get_object_info(path):
    try:
        obj = hydra.utils.get_object(path)
-       name = path.split('.')[-1] # Get the last part of the path
+       name = path.split('.')[-1]
 
        info = {
            'isValid': True,
@@ -52,7 +53,7 @@ def get_object_info(path):
            'isConstant': name.isupper(),
            'error': None,
            'location': None,
-           'arguments': None
+           'parameters': None
        }
 
        try:
@@ -60,13 +61,17 @@ def get_object_info(path):
                'filePath': inspect.getfile(obj),
                'lineNumber': inspect.getsourcelines(obj)[1]
            }
-       except Exception as e:
+       except Exception:
            pass
            
        if info['isCallable']:
            sig = inspect.signature(obj.__init__ if info['isClass'] else obj)
-           info['arguments'] = [
-               name for name, param in sig.parameters.items() 
+           info['parameters'] = [
+               {
+                   'name': name,
+                   'kind': str(param.kind)
+               }
+               for name, param in sig.parameters.items()
                if name != 'self'
            ]
        
@@ -83,11 +88,16 @@ def get_object_info(path):
            'isVariable': False,
            'isConstant': False,
            'location': None,
-           'arguments': None
+           'parameters': None
        }
 
 print(json.dumps(get_object_info('%s')))
 `;
+
+interface ParameterInfo {
+  name: string;
+  kind: string;
+}
 
 interface ObjectInfo {
   isValid: boolean;
@@ -102,7 +112,7 @@ interface ObjectInfo {
     filePath: string;
     lineNumber: number;
   };
-  arguments?: string[];
+  parameters?: ParameterInfo[]; // 引数情報を追加
 }
 
 async function getObjectInfo(importPath: string): Promise<ObjectInfo | undefined> {
@@ -151,9 +161,14 @@ export async function getPythonObjectLocation(importPath: string) {
   return info?.location;
 }
 
-export async function getCallableArguments(importPath: string): Promise<string[] | undefined> {
+export async function getCallableParameters(importPath: string): Promise<ParameterInfo[] | undefined> {
   const info = await getObjectInfo(importPath);
-  return info?.arguments;
+  return info?.parameters;
+}
+
+export async function getCallableArguments(importPath: string): Promise<string[] | undefined> {
+  const parameters = await getCallableParameters(importPath);
+  return parameters?.map(p => p.name);
 }
 
 export async function getInstantiationArgs(importPath: string): Promise<string[] | undefined> {
@@ -167,4 +182,14 @@ export async function getInstantiationArgs(importPath: string): Promise<string[]
     HYDRA_KEYWORDS.CONVERT,
     HYDRA_KEYWORDS.RECURSIVE,
   ];
+}
+
+export async function hasVarPositionalParam(importPath: string): Promise<boolean> {
+  const parameters = await getCallableParameters(importPath);
+  return parameters?.some(p => p.kind === "VAR_POSITIONAL") ?? false;
+}
+
+export async function hasVarKeywordParam(importPath: string): Promise<boolean> {
+  const parameters = await getCallableParameters(importPath);
+  return parameters?.some(p => p.kind === "VAR_KEYWORD") ?? false;
 }

@@ -11,3 +11,11 @@ class YourClass:
         return cls(arg, arg)
 
 CONSTANT = "const"
+
+
+def func(arg0, arg1):
+    pass
+
+
+def func_with_var_kwds(arg, **kwds):
+    pass

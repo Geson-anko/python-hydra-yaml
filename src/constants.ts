@@ -26,7 +26,7 @@ export const DIAGNOSTIC_COLLECTION_NAME = "python-hydra-yaml";
 export const PYTHON_SCRIPTS = {
   LIST_TOP_LEVEL_PACKAGES: `
 import pkgutil
-packages = [m.name for m in pkgutil.iter_modules()]
+packages = [m.name for m in pkgutil.iter_modules() if not m.name.startswith('_')]
 print('\\n'.join(packages))
 `,
   LIST_MODULE_ATTRIBUTES: `

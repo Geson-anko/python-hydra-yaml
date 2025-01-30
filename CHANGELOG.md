@@ -16,3 +16,9 @@ All notable changes to the "python-hydra-yaml" extension will be documented in t
 - Add instantiation target argument completion
 - Add Hydra special keyword completion
 - Refactor some python utilities.
+
+### [0.3.1]
+
+- Display select python environment to the status bar in yaml.
+- Add validation for arguments of instantiation target.
+- Some refactorings.
