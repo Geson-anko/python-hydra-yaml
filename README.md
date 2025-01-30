@@ -10,7 +10,7 @@ About Hydra: <https://hydra.cc>
 
 ## Features
 
-![demo](./images/demo.gif)
+![demo](https://media.githubusercontent.com/media/Geson-anko/python-hydra-yaml/refs/heads/main/images/demo.gif)
 
 ### Intelligent Completion
 
@@ -25,6 +25,7 @@ About Hydra: <https://hydra.cc>
 - Path hierarchy violation checks
 - Hydra keyword value validation
 - Missing reference validation within files
+- Instantiation target argument validation.
 
 ### Navigation
 
